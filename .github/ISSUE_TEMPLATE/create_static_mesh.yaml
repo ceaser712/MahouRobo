@@ -1,0 +1,82 @@
+
+name: Create 3D Static Mesh Model for Game Object
+description: Template for creating a new 3D Static Mesh Model for a game object.
+title: "Create 3D Static Mesh Model for {game object name}"
+labels:
+  - 3d model
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Provide a description of the game object model to be created.
+      placeholder: "Enter the model description..."
+      value: "This hamster is a cheerfull, cartoonish... Huge cheeks and wide eyes..."
+    validations:
+      required: true
+    
+  - type: textarea
+    id: reference-images
+    attributes:
+      label: Reference Images
+      description: Provide reference images.
+      placeholder: "Upload reference images..."
+    validations:
+      required: false
+  
+  - type: input
+    id: dimentions
+    attributes:
+      label: Dimentions
+      description: What are the approximate dimentions of the object in meters?
+      placeholder: "Enter the approximate dimentions in meters..."
+      value: "1.8 meters tall x .3 meters deep, .5 meters wide"
+    validations:
+      required: true
+  
+  - type: input
+    id: file_name
+    attributes:
+      label: File Name
+      description: Provide the file name the 3D model should be saved under.
+      placeholder: "SM_KaijuLarge.fbx"
+      value: "SM_{object_name}.fbx"
+    validations:
+      required: true
+  
+  - type: input
+    id: save_directory
+    attributes:
+      label: Save Directory
+      description: Provide the directory where the model should be saved.
+      placeholder: "Enter the full directory path..."
+      value: "game/{game_object_directory}/"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: Modify the below Acceptance Criteria as necessary.
+    
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      id: subtasks
+      label: Subtasks
+      value: |
+        - [ ] Poly count optimized. (eg. less than 5k poly)
+        - [ ] Model normals correct.
+        - [ ] The model contains UV mapping.
+        - [ ] UV islands created as needed.
+        - [ ] Set the pivot point of the model to the correct location (often bottom center)
+        - [ ] Align the pivot point of the model to the world origin.
+        - [ ] Model facing direction __Positive-Y direction__
+        - [ ] Model is the correct __dimentions__ as defined above.
+        - [ ] The model is saved in `.fbx` file format.
+        - [ ] The model is prefixed with SM_
+        - [ ] The model is saved to the specified directory: `{save_directory}`.
+        - [ ] The model is saved with the specified name: `{file_name}`
+        - [ ] A pull request (PR) is created with the changes.
+        
+        [Pull Request Guide: Github](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)
