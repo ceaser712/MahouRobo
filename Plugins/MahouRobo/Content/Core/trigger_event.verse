@@ -7,12 +7,15 @@ using { /UnrealEngine.com/Temporary/Diagnostics }
 
 # A Verse-authored creative device that can be placed in a level
 trigger_event := class(creative_device):
-
+     Button: button_device = button_device{}
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void=
         Print("Hello, world!")
-        FireEvent()
+        Button.InteractedWithEvent.Subscribe(TestAgent)
         
+    TestAgent(Agent:agent):void=
+        FireEvent()
+
     FireEvent(): void =
         notification_center := event_bus{}
         notification_center.Notify("GameStarted")

@@ -8,10 +8,10 @@ using { /UnrealEngine.com/Temporary/Diagnostics }
 # A Verse-authored creative device that can be placed in a level
 using { /Verse.org/Simulation }
 
-event_bus := class:
+event_bus<public> := class:
     var Listeners: [string][]event_listener = map{}
 
-    Subscribe(EventName: string, Listener: event_listener): void =
+    Subscribe<public>(EventName: string, Listener: event_listener): void =
         if (Current := Listeners[EventName]):
             # Create a new array with existing + new listener
             if(set Listeners[EventName] = Current + array{Listener}):
