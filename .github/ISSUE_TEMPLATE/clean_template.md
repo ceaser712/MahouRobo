@@ -1,6 +1,6 @@
 ---
 name: Template
-about:
+about: This is a Tempalte to use over and over
 title:
 labels:
 assignees: 
