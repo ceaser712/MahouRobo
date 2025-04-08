@@ -4,6 +4,7 @@ description: Template for creating a new 3D Static Mesh Model for a game object.
 title: "Create 3D Static Mesh Model for {game object name}"
 labels:
   - 3d model
+  - static mesh
 body:
   - type: textarea
     id: description
