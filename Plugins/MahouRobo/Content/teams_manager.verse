@@ -20,5 +20,15 @@ teams_manager := class(creative_device):
     var Teams : []team = array{}
 
     # Runs when the device is started in a running game
-    OnBegin<override>()<suspends>:void=
+    OnBegin<override>()<suspends>:void =
         set Teams = GetPlayspace().GetTeamCollection().GetTeams()
+        for (Spawner : Spawners):
+            Spawner.SpawnedEvent.Subscribe(OnPlayerSpawn)
+
+    OnPlayerSpawn(InPlayer : agent) : void = 
+        teamCollection := GetPlayspace().GetTeamCollection()
+        n := Min(Teams.Length, TeamLoadouts.Length)
+        for (i := 0..n):
+            if (teamCollection.IsOnTeam[InPlayer, Teams[i]]):
+                if (loadout := TeamLoadouts[i]):
+                    loadout.GrantItem(InPlayer)
