@@ -27,7 +27,7 @@ body:
       label: File Name
       description: Provide the file name.
       placeholder: "SFX_{description}"
-      value: "Plugins/MahouRobo/Content.../object_name/sfx/"
+      value: "SFX_{description}.wav"
     validations:
       required: true
   
