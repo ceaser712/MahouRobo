@@ -27,10 +27,10 @@ event_bus<public> := class():
                     Print("Unsubscribed listener with Id: {Id} from event: {EventName}")
             if(set Listeners[EventName] = Remaining):
 
-    Notify<public>(EventName: string): void =
+    Notify<public>(EventName: string, Data: any): void =
         if (Handlers := Listeners[EventName]):
             for (L : Handlers):
-                L.Handler.OnEvent(EventName)
+                L.Handler.OnEvent(EventName,Data)
 
 # ✅ Safe global for shared event bus per match/session
 var singleton_map: weak_map(session, event_bus) = map{}

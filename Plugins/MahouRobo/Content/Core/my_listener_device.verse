@@ -12,5 +12,5 @@ my_listener := class(creative_device,event_listener):
         Print("Hello, world!")
         GetGlobalBus().Unsubscribe("MyEvent","MyClass")
         
-    OnEvent<override>(EventName: string): void =
+    OnEvent<override>(EventName: string, Data:any): void =
         Print("Received Event: {EventName}")
