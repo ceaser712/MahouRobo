@@ -1,0 +1,71 @@
+name: Create Sound Effect File
+description: Template for creating a new sound effect file for the game.
+title: "Create sound effect for {sound effect name}"
+labels: [sfx, audio, blocking]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Provide a description of the sound effect to be created.
+      placeholder: "Enter the sound effect description..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide the context where this sound effect will be used.
+      placeholder: "Enter the context for the sound effect..."
+    validations:
+      required: true
+
+  - type: input
+    id: file_name
+    attributes:
+      label: File Name
+      description: Provide the file name.
+      placeholder: "SFX_{description}"
+      value: "SFX_{description}.wav"
+    validations:
+      required: true
+  
+  - type: input
+    id: file_path
+    attributes:
+      label: Save File Path
+      description: Provide the full filepath where the sound effect file should be saved.
+      placeholder: "Enter the full file path..."
+      value: "Plugins/MahouRobo/Content.../ObjectName/"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: Update the below Acceptance Criteria as necessary
+  - type: textarea
+    validations:
+      required: true
+    attributes:
+      id: subtasks
+      label: Subtasks
+      value: |
+        - [ ] The sound effect peak level is normalized to -1 dBFS.
+        - [ ] The sound effect is saved in `.wav` file format.
+        - [ ] The sound effect has a sample rate of 44,100 Hz.
+        - [ ] The sound effect is 16-bit.
+        - [ ] The filename contains the prefix: `SFX_`.
+        - [ ] The filename is PascalCase, underscore-separated, and contains no spaces eg. "SFX_MonsterClawSwipe.wav"
+        - [ ] The sound effect is located at the specified filepath: `{file_path}`.
+        - [ ] The file has been imported in UEFN and has the accompanying `.uasset` file has been generated.
+        - [ ] A pull request (PR) is created with the changes.
+
+        [Pull Request Guide: Github]("https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request")
+        
+        ## Blocking
+        - Implementation tasks
+
+        ## Resources
+
+        - [SFX file specifications](https://docs.google.com/document/d/1A0Xg6b6p4dJHCSPCFfqhRNHCzhNqKGSf7Dt2_czrgyI/edit?tab=t.0#heading=h.2yveh14i3p6)
