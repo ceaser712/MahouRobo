@@ -7,6 +7,11 @@ using { /Verse.org/Assets }
  
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuMd := class(npc_behavior):
+    @editable health : float := 500.0
+    @editable projectile_speed : float := 20.0
+    @editable projectile_damage : float := 5.0
+    @editable move_speed : float := 20.0
+
     HelperFunc : KaijuHelper = KaijuHelper{}
     var Attack1 : animation_sequence = (/anigab@fortnite.com/MahouRobo/Kaiju:)Yeti_Anim_EnemyArmature_Attack
 
@@ -19,6 +24,7 @@ BehaviorKaijuMd := class(npc_behavior):
             NPCFocus := NPCChar.GetFocusInterface[]
             NPCAnim := NPCChar.GetPlayAnimationController[]
         then:
+            NPCChar.SetHealth(health)
             NPCSpawnPoint := NPCChar.GetTransform().Translation
             loop:
                 Sleep(0.1)
