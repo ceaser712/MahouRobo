@@ -76,7 +76,7 @@ team_score_manager := class(creative_device,event_listener):
         else:
             Print("team_score_manager missing a HUD Message Device for team {InTeamIndex}")
 
-    OnEvent<override>(EventName: string, Data:any) : void =
+    OnEvent<override>(EventName: string, Data:eventdata) : void =
         case (EventName):
             "RoundEnd" =>
                 EndGame()

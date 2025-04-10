@@ -5,12 +5,12 @@ using { /Fortnite.com/Game }
 using { /Fortnite.com/Teams }
 using { /Verse.org/Simulation }
 using { /UnrealEngine.com/Temporary/Diagnostics }
-
+using{ CoreCode}
 # See https://dev.epicgames.com/documentation/en-us/uefn/create-your-own-device-in-verse for how to create a verse device.
 
 # A Verse-authored creative device that can be placed in a level
-teams_manager := class(creative_device):
-
+teams_manager := class(creative_device,event_listener):
+    @editable TeamSelect:conversation_device = conversation_device{}
     @editable
     var TeamLoadouts : []item_granter_device = array{}
 
@@ -24,12 +24,28 @@ teams_manager := class(creative_device):
 
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void =
+        TeamSelect.OnConversationEvent.Subscribe(OnPlayerChoseTeam)
+        
         set Teams = GetPlayspace().GetTeamCollection().GetTeams()
         TeamSelectPopup.RespondingButtonEvent.Subscribe(OnTeamSelectButtonClick)
         for (Spawner : Spawners):
             Spawner.SpawnedEvent.Subscribe(OnPlayerSpawn)
 
+    OnEvent<override>(EventName: string, Data:eventdata) : void =
+        case (EventName):
+            "RoundStart" =>
+                for(Player:GetPlayspace().GetPlayers()):
+                    TeamSelect.InitiateConversation(Player)
+            "PlayerJoined" =>
+                if(MaybeAgent:=Data.Agent?):
+                    TeamSelect.InitiateConversation(MaybeAgent)
+            _ => # default
+
+    OnPlayerChoseTeam(Player:agent, Index:int):void=
+        Print("PlayerChose Team: {Index}")
+
     OnPlayerSpawn(InPlayer : agent) : void = 
+        TeamSelect.InitiateConversation(InPlayer)
         teamCollection := GetPlayspace().GetTeamCollection()
         n := Min(Teams.Length, TeamLoadouts.Length)
         for (i := 0..n):
