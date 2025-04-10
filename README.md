@@ -31,14 +31,16 @@ This project may also serve as a portfolio piece to showcase readiness within th
 
 | Feature | Status | Description |
 |--------|--------|-------------|
-| EventBus | 📝 | Decoupled game-wide communication system |
-| Team Selection | 📝 | Simple system for players to join the red or blue team |
-| Player in Progress Manager | 📝 | game wide handler for player join, player leave.  |
+| EventBus | ✅ | Decoupled game-wide communication system |
+| Team Selection | 🔄 | Simple system for players to join the red or blue team |
+| Sound Manager | ✅ | Simple system to play team and non team based Audio |
+| Score Manager | ✅ | Simple system to track player score |
+| Player in Progress Manager | ✅ | game wide handler for player join, player leave.  |
 | Event Spawner | 📝 | Lightweight system for spawning random events in map such as emote photo op |
-| Kaiju Behaviour | 📝 | Enemy agents that navigate, chase, attack, and react to the environment|
-| Kaiju Spawning Behaviour | 📝 | Fully rebindable gamepad/keyboard controls with context switching |
-| UI Feedback System | 📝 | Team Selection, Game Timer, Team PR Score, City Damage,  Timer Urgency |
-| Dev Cheats & Debug Tools | 📝 | Buttons for testing Logic, toggling systems, and stress testing |
+| Kaiju Behaviour | 🔄 | Enemy agents that navigate, chase, attack, and react to the environment|
+| Kaiju Spawning Behaviour | 🔄 | Fully rebindable gamepad/keyboard controls with context switching |
+| UI Feedback System | 🔄 | Team Selection, Game Timer, Team PR Score, City Damage,  Timer Urgency |
+| Dev Cheats & Debug Tools | ✅ | Buttons for testing Logic, toggling systems, and stress testing |
 | Performance Profiling | 📝 | Runtime profiling using private codes and TPS Tracking and in-editor tools |
 
 ## 🚀 Getting Started

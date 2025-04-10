@@ -77,3 +77,5 @@ DerivedDataCache/*
 
 # Ignore all files in the .urc directory
 .urc/
+*.sqlite
+*.code-workspace
