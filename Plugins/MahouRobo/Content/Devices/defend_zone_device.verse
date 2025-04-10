@@ -10,7 +10,7 @@ TeamEnum := enum{Everyone, Robots, MagicalGirls}
 
 defend_zone_data := class():
     @editable CaptureZone: capture_area_device
-    @editable ZoneProp: creative_prop 
+    @editable ZoneProp: creative_prop = creative_prop{}
     @editable var Team : TeamEnum = TeamEnum.Everyone
 
 # A Verse-authored creative device that can be placed in a level
@@ -61,7 +61,7 @@ defend_zone_device := class(creative_device):
         var availableZones : []defend_zone_data = array{}
         
         for (defendZone : DefendZoneData):
-            if (defendZone.Team <> TeamEnum.Everyone):
+            if (defendZone.Team = TeamEnum.Everyone):
                 tempArray := array{defendZone}
                 set availableZones = availableZones + tempArray
 
@@ -111,3 +111,6 @@ defend_zone_device := class(creative_device):
 
                 # Give control of the defend zone to the team
                 GiveControlOfDefendZone(defendZone, teamData)
+
+        else :
+            Print("DefendZone: No defend zone found")
