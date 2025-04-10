@@ -10,7 +10,7 @@ TeamEnum := enum{Everyone, Robots, MagicalGirls}
 
 defend_zone_data := class():
     @editable CaptureZone: capture_area_device
-    @editable ZoneMaterial: creative_prop 
+    @editable ZoneProp: creative_prop 
     @editable Team : TeamEnum = TeamEnum.Everyone
 
 # A Verse-authored creative device that can be placed in a level
@@ -23,53 +23,53 @@ defend_zone_device := class(creative_device):
 
     @editable NeutralMaterial : material = material{}
     @editable RobotMaterial : material = material{}
-    @editable MagicalGirlsMaterial : material = material{}
-
+    @editable MagicalGirlMaterial : material = material{}
+    
     OnBegin<override>()<suspends>:void=
         # Desable all capture zones
         for (defendZone : DefendZoneData):
             defendZone.CaptureZone.Disable()
 
 
-    GetTeamFromEnum(teamData: TeamEnum)<decides>: team =
+    GetTeamFromEnum(teamData: TeamEnum): ?team =
         teamCollection := GetPlayspace().GetTeamCollection()
         teamArray := teamCollection.GetTeams()
     
         case (teamData):
             TeamEnum.Robots =>
                 if (t := teamArray[RobotTeamIndex]):
-                    return t
+                    return option{t}
                 else:
-                    fail
+                    false
     
             TeamEnum.MagicalGirls =>
                 if (t := teamArray[MagicalGirlsTeamIndex]):
-                    return t
+                    return option{t}
                 else:
-                    fail
+                    false
     
             _ =>
                 Print("DefendZone: No team data found for event")
-                fail
+                false
     
     SelectDefendZone(teamData : TeamEnum): void=
         if (Count := DefendZoneData.Length - 1 > 0):
 
             teamCollection := GetPlayspace().GetTeamCollection()
-            if(selectedTeam := GetTeamFromEnum[teamData]):
-                var index : int = GetRandomInt(0, Count)
+            selectedTeam := GetTeamFromEnum(teamData)
+            var index : int = GetRandomInt(0, Count)
                 
-                if (defendZone := DefendZoneData[index]):
-                    case(teamData):
-                        TeamEnum.Robots =>
-                            defendZone.ZoneMaterial.SetMaterial(RobotMaterial)
-                            if(firstAgent := teamCollection.GetAgents[selectedTeam][0]):
-                                defendZone.CaptureZone.GiveControl(firstAgent)
-                            
-                        TeamEnum.MagicalGirls =>
-                            defendZone.ZoneMaterial.SetMaterial(MagicalGirlsMaterial)
-                            if(firstAgent := teamCollection.GetAgents[selectedTeam][0]):
-                                defendZone.CaptureZone.GiveControl(firstAgent)
+            if (defendZone := DefendZoneData[index]):
+                case(teamData):
+                    TeamEnum.Robots =>
+                        defendZone.ZoneProp.SetMaterial(RobotMaterial)
+                        if(firstAgent := teamCollection.GetAgents[selectedTeam?][0]):
+                            defendZone.CaptureZone.GiveControl(firstAgent)
+                        
+                    TeamEnum.MagicalGirls =>
+                        defendZone.ZoneProp.SetMaterial(MagicalGirlMaterial)
+                        if(firstAgent := teamCollection.GetAgents[selectedTeam?][0]):
+                            defendZone.CaptureZone.GiveControl(firstAgent)
 
-                        _ =>
-                            Print("DefendZone: No team data found for event")
+                    _ =>
+                        Print("DefendZone: No team data found for event")
