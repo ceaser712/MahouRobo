@@ -7,7 +7,7 @@ using { /UnrealEngine.com/Temporary/Diagnostics }
 
 # A Verse-authored creative device that can be placed in a level
 event_listener<public> := interface:
-    OnEvent(EventName: string): void
+    OnEvent<public>(EventName: string, Data: any): void
 
 listener_wrapper := class:
     Id: string
