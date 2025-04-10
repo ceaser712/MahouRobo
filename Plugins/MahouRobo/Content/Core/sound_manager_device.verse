@@ -18,6 +18,7 @@ sound_manager_device := class(creative_device, event_listener):
     @editable AudioData : []audio_player_dataset = array{}
     @editable RobotTeamIndex : int = 0
     @editable MagicalGirlsTeamIndex : int = 1
+
     var AudioDataMap : [string]audio_player_dataset = map{}
 
     # Runs when the device is started in a running game
