@@ -17,11 +17,15 @@ teams_manager := class(creative_device):
     @editable
     var Spawners : []player_spawner_device = array{}
 
+    @editable
+    var TeamSelectPopup: popup_dialog_device = popup_dialog_device{}
+
     var Teams : []team = array{}
 
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void =
         set Teams = GetPlayspace().GetTeamCollection().GetTeams()
+        TeamSelectPopup.RespondingButtonEvent.Subscribe(OnTeamSelectButtonClick)
         for (Spawner : Spawners):
             Spawner.SpawnedEvent.Subscribe(OnPlayerSpawn)
 
@@ -32,3 +36,11 @@ teams_manager := class(creative_device):
             if (teamCollection.IsOnTeam[InPlayer, Teams[i]]):
                 if (loadout := TeamLoadouts[i]):
                     loadout.GrantItem(InPlayer)
+
+    OnTeamSelectButtonClick(InAgent : agent, InResponse : int) : void =
+        TeamIndex := InResponse + 1
+        Print("Selected team {TeamIndex}")
+        if (Team := Teams[InResponse]):
+            if (GetPlayspace().GetTeamCollection().AddToTeam[InAgent, Team]):
+                return
+        Print("Team {TeamIndex} is not a team")
