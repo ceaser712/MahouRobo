@@ -3,7 +3,6 @@ using { /Fortnite.com/Characters }
 using { /Verse.org/Simulation }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
-using { Core }
 
 
 elimination_callback := class():
