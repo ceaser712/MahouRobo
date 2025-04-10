@@ -26,7 +26,7 @@ HandleElimination(Player: agent, Result: elimination_result): void =
             "killer" => Player
         })
 
-player_event_manager := class(creative_device):
+player_event_bus_device := class(creative_device):
 
     OnBegin<override>()<suspends>: void =
         Playspace := GetPlayspace()
