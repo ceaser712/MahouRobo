@@ -16,6 +16,8 @@ audio_player_dataset := class():
 sound_manager_device := class(creative_device, event_listener):
 
     @editable AudioData : []audio_player_dataset = array{}
+    @editable RobotTeamIndex : int = 0
+    @editable MagicalGirlsTeamIndex : int = 1
     var AudioDataMap : [string]audio_player_dataset = map{}
 
     # Runs when the device is started in a running game
@@ -39,7 +41,7 @@ sound_manager_device := class(creative_device, event_listener):
                 TeamEnum.Robots =>
                     teamCollection := GetPlayspace().GetTeamCollection()
                     teamArray := teamCollection.GetTeams()
-                    if (robotTeam := teamArray[0]):
+                    if (robotTeam := teamArray[RobotTeamIndex]):
                         if(players := teamCollection.GetAgents[robotTeam]):
                             for(p : players):
                                 audioData.AudioPlayer.Play(p)
@@ -47,7 +49,7 @@ sound_manager_device := class(creative_device, event_listener):
                 TeamEnum.MagicalGirls =>
                     teamCollection := GetPlayspace().GetTeamCollection()
                     teamArray := teamCollection.GetTeams()
-                    if (robotTeam := teamArray[1]):
+                    if (robotTeam := teamArray[MagicalGirlsTeamIndex]):
                         if(players := teamCollection.GetAgents[robotTeam]):
                             for(p : players):
                                 audioData.AudioPlayer.Play(p)
