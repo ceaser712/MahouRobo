@@ -17,6 +17,9 @@ team_score_manager := class(creative_device,event_listener):
     @editable
     var HudMessages : []hud_message_device = array{}
 
+    @editable
+    var GameEnders : []end_game_device = array{}
+
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void =
         GetGlobalBus().Subscribe("RoundEnd","team_score_manager", Self)
@@ -71,10 +74,32 @@ team_score_manager := class(creative_device,event_listener):
             else:
                 Print("UpdateHud got team {InTeamIndex} (must be 1..{Scores.Length})")
         else:
-            Print("UpdateHud missing a HUD Message Device for team {InTeamIndex}")
+            Print("team_score_manager missing a HUD Message Device for team {InTeamIndex}")
 
     OnEvent<override>(EventName: string, Data:any) : void =
         case (EventName):
             "RoundEnd" =>
-                Print("The winner is {GetWinningTeam()}")
+                EndGame()
             _ => # default
+    
+    EndGame() : void =
+        WinningTeam := GetWinningTeam()
+        if (WinningTeam = 0):
+            Print("Draw or tiebreaker NYI")
+            return
+        
+        teamCollection := GetPlayspace().GetTeamCollection()
+        teams := teamCollection.GetTeams()
+        if (Team := teams[WinningTeam - 1]):
+            if (Agents := teamCollection.GetAgents[Team]):
+                if (Agent := Agents[0]):
+                    if (GameEnder := GameEnders[WinningTeam - 1]):
+                        GameEnder.Activate(Agent)
+                    else:
+                        Print("team_score_manager missing an End Game Device for team {WinningTeam}")
+                else:
+                    Print("EndGame: No agents in team")
+            else:
+                Print("EndGame: tried to win with nonexistent team {WinningTeam}")
+        else:
+            Print("EndGame: tried to win with nonexistent team {WinningTeam}")
