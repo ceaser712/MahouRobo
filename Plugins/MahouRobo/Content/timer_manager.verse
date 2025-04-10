@@ -16,7 +16,7 @@ timer_manager<public> := class(creative_device,event_listener):
         GetGlobalBus().Subscribe("RoundStart","timer_manager", Self)
         GetGlobalBus().Subscribe("RoundEnd","timer_manager", Self)
     
-    OnEvent<override>(EventName: string, Data:any): void =
+    OnEvent<override>(EventName: string, Data:eventdata): void =
         Print("Received Event: {EventName}")
         if (EventName = "RoundStart"):
             set CancelTimer = false
