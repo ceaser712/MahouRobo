@@ -5,7 +5,7 @@ using { /Verse.org/Simulation }
 using { /Verse.org/Random }
 using { /Verse.org/Assets }
 using { /UnrealEngine.com/Temporary/Diagnostics }
-
+using {MaterialLibrary}
 TeamEnum := enum{Everyone, Robots, MagicalGirls}
 
 defend_zone_data := class():
@@ -21,9 +21,9 @@ defend_zone_device := class(creative_device):
     @editable RobotTeamIndex : int = 0
     @editable MagicalGirlsTeamIndex : int = 1
 
-    @editable NeutralMaterial : material = material{}
-    @editable RobotMaterial : material = material{}
-    @editable MagicalGirlMaterial : material = material{}
+    NeutralMaterial : Color_Flat_Master_material = Color_Flat_Master_material{}
+    RobotMaterial : Color_Flat_Master_material = Color_Flat_Master_material{}
+    MagicalGirlMaterial : Color_Flat_Master_material = Color_Flat_Master_material{}
     
     OnBegin<override>()<suspends>:void=
         # Desable all capture zones
