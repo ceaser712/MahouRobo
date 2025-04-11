@@ -51,6 +51,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
+            NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
             NPCChar.SetHealth(health)
             NPCSpawnPoint := NPCChar.GetTransform().Translation
             loop:
@@ -91,6 +92,9 @@ BehaviorKaijuLg := class(NPC_Kaiju):
         else:
             return false
                 
+
+    OnKaijuEliminated<override>(Result:elimination_result):void=
+        (super:)OnKaijuEliminated(Result)
 
     # This function runs when the NPC is despawned or eliminated from the world.
     OnEnd<override>():void=
