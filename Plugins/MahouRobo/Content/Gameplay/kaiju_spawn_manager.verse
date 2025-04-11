@@ -26,6 +26,14 @@ kaiju_spawn_manager := class(creative_device,event_listener):
     @editable
     var MediumInterval: float = 5.0
 
+    @editable
+    var SmallLimit: int = 15
+
+    @editable
+    var MediumLimit: int = 15
+
+    var NumKaiju: int = 0
+
     var CurrentPhase: int = 0
 
     # Runs when the device is started in a running game
@@ -34,8 +42,25 @@ kaiju_spawn_manager := class(creative_device,event_listener):
         GlobalBus.Subscribe("RoundStart", "kaiju_spawn_manager", Self)
         GlobalBus.Subscribe("MidPhaseStart", "kaiju_spawn_manager", Self)
         GlobalBus.Subscribe("BossPhaseStart", "kaiju_spawn_manager", Self)
+        for (Spawner:SmallSpawners):
+            Spawner.SpawnedEvent.Subscribe(OnSpawn)
+            Spawner.EliminatedEvent.Subscribe(OnElimination)
+        for (Spawner:MediumSpawners):
+            Spawner.SpawnedEvent.Subscribe(OnSpawn)
+            Spawner.EliminatedEvent.Subscribe(OnElimination)
+        BossSpawner.SpawnedEvent.Subscribe(OnSpawn)
+        BossSpawner.EliminatedEvent.Subscribe(OnElimination)
+
         # spawn:
         #     TestPhaseAdvance()
+
+    OnSpawn(NewKaiju: agent):void =
+        set NumKaiju += 1
+        # Print("OnSpawn {NumKaiju}")
+
+    OnElimination(Elimination: device_ai_interaction_result): void =
+        set NumKaiju -= 1
+        # Print("OnElimination {NumKaiju}")
 
     PickSpawner(Spawners: []npc_spawner_device): npc_spawner_device =
         # TODO pick the one farthest from any player
@@ -46,11 +71,12 @@ kaiju_spawn_manager := class(creative_device,event_listener):
         Print("No spawner {I}")
         return npc_spawner_device{}
 
-    SpawnTask(Phase: int, Spawners: []npc_spawner_device, Interval: float)<suspends> : void =
+    SpawnTask(Phase: int, Spawners: []npc_spawner_device, Interval: float, Limit: int)<suspends> : void =
         loop:
             if (CurrentPhase = Phase):
-                Spawner := PickSpawner(Spawners)
-                Spawner.Spawn()
+                if (NumKaiju < Limit):
+                    Spawner := PickSpawner(Spawners)
+                    Spawner.Spawn()
                 Sleep(Interval)
             else:
                 for (Spawner : Spawners):
@@ -71,14 +97,14 @@ kaiju_spawn_manager := class(creative_device,event_listener):
             "RoundStart" =>
                 set CurrentPhase = 1
                 spawn:
-                    SpawnTask(1, SmallSpawners, SmallInterval)
+                    SpawnTask(1, SmallSpawners, SmallInterval, SmallLimit)
 
                 # Print("Start spawning small")
 
             "MidPhaseStart" =>
                 set CurrentPhase = 2
                 spawn:
-                    SpawnTask(2, MediumSpawners, MediumInterval)
+                    SpawnTask(2, MediumSpawners, MediumInterval, MediumLimit)
 
                 # Print("Start spawning medium")
 
