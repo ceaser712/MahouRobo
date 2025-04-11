@@ -44,8 +44,8 @@ teams_manager := class(creative_device,event_listener):
                     TeamSelect.InitiateConversation(MaybeAgent)
             _ => # default
 
-    OnPlayerChoseTeam(Player:agent, Index:int):void=
-        TeamIndex := Index + 1
+    OnPlayerChoseTeam(Player:agent, TeamIndex:int):void=
+        Index := TeamIndex - 1
         Print("Selected team {TeamIndex}")
         if (Team := Teams[Index]):
             if (GetPlayspace().GetTeamCollection().AddToTeam[Player, Team]):
