@@ -34,6 +34,8 @@ kaiju_spawn_manager := class(creative_device,event_listener):
         GlobalBus.Subscribe("RoundStart", "kaiju_spawn_manager", Self)
         GlobalBus.Subscribe("MidPhaseStart", "kaiju_spawn_manager", Self)
         GlobalBus.Subscribe("BossPhaseStart", "kaiju_spawn_manager", Self)
+        # spawn:
+        #     TestPhaseAdvance()
 
     PickSpawner(Spawners: []npc_spawner_device): npc_spawner_device =
         # TODO pick the one farthest from any player
@@ -55,18 +57,31 @@ kaiju_spawn_manager := class(creative_device,event_listener):
                     Spawner.DespawnAll(false)
                 break
         
+    TestPhaseAdvance()<suspends> : void =
+        PhaseEvents := array{"", "MidPhaseStart", "BossPhaseStart"}
+        loop:
+            if (NextPhaseEvent := PhaseEvents[CurrentPhase]):
+                Sleep(10.0)
+                GetGlobalBus().Notify(NextPhaseEvent, eventdata{})
+            else:
+                break
+
     OnEvent<override>(EventName: string, Data: eventdata): void =
         case (EventName):
             "RoundStart" =>
                 set CurrentPhase = 1
                 spawn:
                     SpawnTask(1, SmallSpawners, SmallInterval)
+
                 # Print("Start spawning small")
+
             "MidPhaseStart" =>
                 set CurrentPhase = 2
                 spawn:
                     SpawnTask(2, MediumSpawners, MediumInterval)
+
                 # Print("Start spawning medium")
+
                 # TODO make them all explode or something
                 for (Spawner : SmallSpawners):
                     Spawner.DespawnAll(false)
@@ -74,6 +89,8 @@ kaiju_spawn_manager := class(creative_device,event_listener):
                 set CurrentPhase = 3
                 BossSpawner.Spawn()
                 
+                # Print("Spawn boss")
+
                 # TODO make them all explode or something
                 for (Spawner : MediumSpawners):
                     Spawner.DespawnAll(false)
