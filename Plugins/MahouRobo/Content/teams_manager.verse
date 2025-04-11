@@ -45,7 +45,12 @@ teams_manager := class(creative_device,event_listener):
             _ => # default
 
     OnPlayerChoseTeam(Player:agent, Index:int):void=
-        Print("PlayerChose Team: {Index}")
+        TeamIndex := Index + 1
+        Print("Selected team {TeamIndex}")
+        if (Team := Teams[Index]):
+            if (GetPlayspace().GetTeamCollection().AddToTeam[Player, Team]):
+                return
+        Print("Team {TeamIndex} is not a team")
 
     OnPlayerSpawn(InPlayer : agent) : void = 
         TeamSelect.InitiateConversation(InPlayer)
