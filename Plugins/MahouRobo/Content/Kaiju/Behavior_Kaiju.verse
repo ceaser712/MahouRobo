@@ -4,10 +4,12 @@ using { /Fortnite.com/Animation/PlayAnimation }
 using { /Verse.org/Simulation }
 using { /Verse.org/Assets }
 using { /UnrealEngine.com/Temporary/SpatialMath }
- 
+using { /Fortnite.com/Game }
+using {CoreCode}
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 NPC_Kaiju := class(npc_behavior):
-    @editable attack_recovery : float := 0.46
+    @editable point_value : float := 10.0
+    @editable attack_recovery : float := 1.46
     @editable reach_radius : float := 150.0
 
     HelperFunc : KaijuHelper = KaijuHelper{}
@@ -33,9 +35,21 @@ NPC_Kaiju := class(npc_behavior):
                     if(NavResult = navigation_result.Reached):
                         spawn{PlayAttackAnimation()}
                         Sleep(attack_recovery)
-    
-    MoveToTarget(NewLocation:transform)<suspends>:logic = false
-    PlayAttackAnimation()<suspends>:logic = false
+
+
+    OnKaijuEliminated<public>(Result:elimination_result):void=
+        Victim := Result.EliminatedCharacter
+        if (MaybeKiller := Result.EliminatingCharacter?):
+            if (MaybeKiller = Victim):
+                
+            else if (VictimAgent := Victim.GetAgent[], KillerAgent := MaybeKiller.GetAgent[]):
+                GetGlobalBus().Notify("PlayerEliminatedKaiju", eventdata{AgentMap := option{map{
+                    "killer" => KillerAgent,
+                    "victim" => VictimAgent
+                }}})
+
+    MoveToTarget<public>(NewLocation:transform)<suspends>:logic = false
+    PlayAttackAnimation<public>()<suspends>:logic = false
 
     # This function runs when the NPC is despawned or eliminated from the world.
     OnEnd<override>():void=
