@@ -17,10 +17,12 @@ BehaviorKaijuMd := class(NPC_Kaiju):
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
     OnBegin<override>()<suspends>:void=
+        set point_value = 5
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
+            NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
             NPCChar.SetHealth(health)
             NPCSpawnPoint := NPCChar.GetTransform().Translation
             loop:
@@ -59,6 +61,10 @@ BehaviorKaijuMd := class(NPC_Kaiju):
             return true
         else:
             return false
+
+
+    OnKaijuEliminated<override>(Result:elimination_result):void=
+        (super:)OnKaijuEliminated(Result)
 
     # This function runs when the NPC is despawned or eliminated from the world.
     OnEnd<override>():void=
