@@ -32,6 +32,8 @@ kaiju_spawn_manager := class(creative_device,event_listener):
     OnBegin<override>()<suspends>:void=
         GlobalBus := GetGlobalBus()
         GlobalBus.Subscribe("RoundStart", "kaiju_spawn_manager", Self)
+        GlobalBus.Subscribe("MidPhaseStart", "kaiju_spawn_manager", Self)
+        GlobalBus.Subscribe("BossPhaseStart", "kaiju_spawn_manager", Self)
 
     PickSpawner(Spawners: []npc_spawner_device): npc_spawner_device =
         # TODO pick the one farthest from any player
