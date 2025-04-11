@@ -4,7 +4,8 @@ using { /Fortnite.com/Animation/PlayAnimation }
 using { /Verse.org/Simulation }
 using { /Verse.org/Assets }
 using { /UnrealEngine.com/Temporary/SpatialMath }
- 
+using { /Fortnite.com/Game }
+using {CoreCode}
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuSm := class(NPC_Kaiju):
     @editable health : float := 500.0
@@ -20,6 +21,7 @@ BehaviorKaijuSm := class(NPC_Kaiju):
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
+            NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
             NPCChar.SetHealth(health)
             NPCSpawnPoint := NPCChar.GetTransform().Translation
             loop:
@@ -27,6 +29,9 @@ BehaviorKaijuSm := class(NPC_Kaiju):
                 if (NewTarget := HelperFunc.FindNearestTarget[NPCChar], NewLocation := NewTarget.GetTransform()):
                     spawn{MoveToTarget(NewLocation)}
                     Sleep(0.46)
+
+    OnKaijuEliminated<override>(Result:elimination_result):void=
+        (super:)OnKaijuEliminated(Result)
     
     MoveToTarget<override>(NewLocation:transform)<suspends>:logic =
         if:
