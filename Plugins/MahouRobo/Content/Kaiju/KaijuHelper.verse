@@ -17,3 +17,26 @@ KaijuHelper := class(creative_device):
                 set PossibleTarget = option{PlayerFC}
                 set CheckRange = DistanceDifference
         return PossibleTarget?
+
+
+    FindNearestTransform(FC : fort_character, Transforms: []transform)<decides><transacts> : transform =
+        var PossibleTarget : ?transform = false
+        var CheckRange : float = 5000.0
+        for(Transform : Transforms):
+            if:
+                DistanceDifference := Distance(Transform.Translation, FC.GetTransform().Translation) < CheckRange
+            then:
+                set PossibleTarget = option{Transform}
+                set CheckRange = DistanceDifference
+        return PossibleTarget?
+
+    FindNearestWaypoint(FC : fort_character, Transforms: []creative_prop)<decides><transacts> : transform =
+        var PossibleTarget : ?transform = false
+        var CheckRange : float = 5000.0
+        for(Waypoint : Transforms):
+            if:
+                DistanceDifference := Distance(Waypoint.GetTransform().Translation, FC.GetTransform().Translation) < CheckRange
+            then:
+                set PossibleTarget = option{Waypoint.GetTransform()}
+                set CheckRange = DistanceDifference
+        return PossibleTarget?
