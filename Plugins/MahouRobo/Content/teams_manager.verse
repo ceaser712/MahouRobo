@@ -30,6 +30,9 @@ teams_manager := class(creative_device,event_listener):
         TeamSelectPopup.RespondingButtonEvent.Subscribe(OnTeamSelectButtonClick)
         for (Spawner : Spawners):
             Spawner.SpawnedEvent.Subscribe(OnPlayerSpawn)
+        
+        GetGlobalBus().Subscribe("RoundStart","teams_manager", Self)
+        GetGlobalBus().Subscribe("PlayerJoined","teams_manager", Self)
 
     OnEvent<override>(EventName: string, Data:eventdata) : void =
         case (EventName):
