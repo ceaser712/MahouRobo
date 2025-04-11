@@ -22,9 +22,12 @@ team_score_manager := class(creative_device,event_listener):
 
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void =
-        GetGlobalBus().Subscribe("RoundEnd","team_score_manager", Self)
-        for (EliminationManager : EliminationManagers):
-            EliminationManager.EliminationEvent.Subscribe(OnElimination)
+        GlobalBus := GetGlobalBus()
+        GlobalBus.Subscribe("PlayerEliminatedPlayer","team_score_manager", Self)
+        GlobalBus.Subscribe("PlayerEliminatedCreature","team_score_manager", Self)
+        GlobalBus.Subscribe("RoundEnd","team_score_manager", Self)
+        # for (EliminationManager : EliminationManagers):
+        #     EliminationManager.EliminationEvent.Subscribe(OnElimination)
 
         n := GetPlayspace().GetTeamCollection().GetTeams().Length
         set Scores =
@@ -53,14 +56,12 @@ team_score_manager := class(creative_device,event_listener):
                     set t = 0
         return t
 
-    OnElimination(InEliminator : ?agent):void =
-        if (not InEliminator?):
-            return
+    OnElimination(InEliminator : agent):void =
         teamCollection := GetPlayspace().GetTeamCollection()
         teams := teamCollection.GetTeams()
         n := teams.Length
         for (i := 0..n):
-            if (teamCollection.IsOnTeam[InEliminator?, teams[i]]):
+            if (teamCollection.IsOnTeam[InEliminator, teams[i]]):
                 GivePoints(i + 1, 1)
                 UpdateHud(i + 1)
 
@@ -78,6 +79,12 @@ team_score_manager := class(creative_device,event_listener):
 
     OnEvent<override>(EventName: string, Data:eventdata) : void =
         case (EventName):
+            "PlayerEliminatedPlayer" =>
+                if (Agent := Data.AgentMap?["killer"]):
+                    OnElimination(Agent)
+            "PlayerEliminatedCreature" =>
+                if (Agent := Data.Agent?):
+                    OnElimination(Agent)
             "RoundEnd" =>
                 EndGame()
             _ => # default
