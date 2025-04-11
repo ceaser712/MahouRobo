@@ -39,7 +39,7 @@ kaiju_spawn_manager := class(creative_device,event_listener):
         # TODO pick the one farthest from any player
         I := GetRandomInt(0, Spawners.Length - 1)
         if (Spawner := Spawners[I]):
-            Print("Spawner {I}")
+            # Print("Spawner {I}")
             return Spawner
         Print("No spawner {I}")
         return npc_spawner_device{}
@@ -61,12 +61,12 @@ kaiju_spawn_manager := class(creative_device,event_listener):
                 set CurrentPhase = 1
                 spawn:
                     SpawnTask(1, SmallSpawners, SmallInterval)
-                Print("Start spawning small")
+                # Print("Start spawning small")
             "MidPhaseStart" =>
                 set CurrentPhase = 2
                 spawn:
                     SpawnTask(2, MediumSpawners, MediumInterval)
-                Print("Start spawning medium")
+                # Print("Start spawning medium")
                 # TODO make them all explode or something
                 for (Spawner : SmallSpawners):
                     Spawner.DespawnAll(false)
