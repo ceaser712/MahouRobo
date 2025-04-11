@@ -8,7 +8,7 @@ using { /Fortnite.com/Game }
 using {CoreCode}
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 NPC_Kaiju := class(npc_behavior):
-    @editable point_value : float := 10.0
+    @editable var point_value : int := 10
     @editable attack_recovery : float := 1.46
     @editable reach_radius : float := 150.0
 
@@ -43,7 +43,7 @@ NPC_Kaiju := class(npc_behavior):
             if (MaybeKiller = Victim):
                 
             else if (VictimAgent := Victim.GetAgent[], KillerAgent := MaybeKiller.GetAgent[]):
-                GetGlobalBus().Notify("PlayerEliminatedKaiju", eventdata{AgentMap := option{map{
+                GetGlobalBus().Notify("PlayerEliminatedKaiju", eventdata{ValueI:= point_value ,AgentMap := option{map{
                     "killer" => KillerAgent,
                     "victim" => VictimAgent
                 }}})
