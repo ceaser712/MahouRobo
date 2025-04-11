@@ -5,7 +5,7 @@ using { /Fortnite.com/Animation/PlayAnimation }
 using { /Verse.org/Simulation }
 using { /Verse.org/Assets }
 using { /UnrealEngine.com/Temporary/SpatialMath }
-
+using { /Fortnite.com/Game }
  
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuLg := class(npc_behavior):
