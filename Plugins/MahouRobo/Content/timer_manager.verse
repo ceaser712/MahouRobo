@@ -40,6 +40,6 @@ timer_manager<public> := class(creative_device,event_listener):
                 GetGlobalBus().Notify("TimerCompleted",eventdata{})
                 Timer.ResetForAll()
                 break
-            Print("Timer: {Remaining} seconds left")
+           
             Sleep(1.0)
             set Remaining = Remaining - 1.0

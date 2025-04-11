@@ -24,6 +24,8 @@ HandleElimination(Player: agent, Result: elimination_result): void =
         GetGlobalBus().Notify("PlayerEliminatedCreature", eventdata{Agent:= option{Player}})
 
 player_event_bus_device := class(creative_device):
+    @editable
+    var EliminationManager : elimination_manager_device = elimination_manager_device{}
 
     OnBegin<override>()<suspends>: void =
         Playspace := GetPlayspace()
