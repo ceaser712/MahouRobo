@@ -49,6 +49,8 @@ kaiju_spawn_manager := class(creative_device,event_listener):
                 Spawner.Spawn()
                 Sleep(Interval)
             else:
+                for (Spawner : Spawners):
+                    Spawner.DespawnAll(false)
                 break
         
     OnEvent<override>(EventName: string, Data: eventdata): void =
