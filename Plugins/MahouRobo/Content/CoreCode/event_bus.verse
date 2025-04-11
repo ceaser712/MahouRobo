@@ -34,6 +34,7 @@ event_bus<public> := class():
             if(set Listeners[EventName] = Remaining):
 
     Notify<public>(EventName: string, Data: eventdata): void =
+        Print("Notifying Event: {EventName}")
         if (Handlers := Listeners[EventName]):
             for (L : Handlers):
                 L.Handler.OnEvent(EventName,Data)
