@@ -21,6 +21,7 @@ BehaviorKaijuMd := class(NPC_Kaiju):
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
     OnBegin<override>()<suspends>:void =
+        Sleep(0.5)
         set point_value = 5
     
         if:
@@ -32,21 +33,6 @@ BehaviorKaijuMd := class(NPC_Kaiju):
             NPCSpawnPoint := NPCChar.GetTransform().Translation
     
             spawn { MovementLoop(NPCChar) }
-                    
-    AttackLoop(NPCChar:fort_character)<suspends>:void =
-        Sleep(GetRandomFloat(0.0, 0.5))  # Desync from other monsters
-    
-        loop:
-            Sleep(0.1)
-    
-            if (isTargetInRange?):
-                spawn { PlayAttackAnimation() }
-                set isTargetInRange = false
-    
-                # Wait for recovery + random variance before next attack
-                Base := attack_recovery
-                Variance := GetRandomFloat(-attack_delay_variance, attack_delay_variance)
-                Sleep(Base + Variance)
 
     MovementLoop(NPCChar:fort_character)<suspends>:void =
         Sleep(GetRandomFloat(0.0, 0.5))  # Desync

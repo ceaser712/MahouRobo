@@ -17,7 +17,7 @@ explosives_pool := class(creative_device,event_listener):
     OnBegin<override>()<suspends>:void=
         GetGlobalBus().Subscribe("MedKaijuAttacked","Explosives_pool", Self)
 
-    CheckPlayersInFrontAndDamage(NPCChar:fort_character, Radius:float, FOVAngleDegrees:float)<suspends>:void =
+    CheckPlayersInFrontAndDamage(NPCChar:fort_character, Radius:float, FOVAngleDegrees:float, Damage:float)<suspends>:void =
         MonsterTransform := NPCChar.GetTransform()
         MonsterForward := MonsterTransform.Rotation.GetLocalForward()
     
@@ -39,4 +39,9 @@ explosives_pool := class(creative_device,event_listener):
         if(EventName = "MedKaijuAttacked"):
             if(MaybeAgent:= Data.Agent?,MaybeFArray:= Data.ValueFA?,Radius:= MaybeFArray[0], FOVAngleDegrees:= MaybeFArray[1], FCharacter:= MaybeAgent.GetFortCharacter[]):
                 ("Print All Good")
-                spawn{CheckPlayersInFrontAndDamage(FCharacter,Radius,FOVAngleDegrees)}
+                spawn{CheckPlayersInFrontAndDamage(FCharacter,Radius,FOVAngleDegrees,20.0)}
+
+        if(EventName = "SmKaijuAttacked"):
+            if(MaybeAgent:= Data.Agent?,MaybeFArray:= Data.ValueFA?,Radius:= MaybeFArray[0], FOVAngleDegrees:= MaybeFArray[1], FCharacter:= MaybeAgent.GetFortCharacter[]):
+                ("Print All Good")
+                spawn{CheckPlayersInFrontAndDamage(FCharacter,Radius,FOVAngleDegrees,7.0)}

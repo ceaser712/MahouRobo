@@ -47,6 +47,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
    
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
     OnBegin<override>()<suspends>:void=
+        Sleep(0.5)
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
