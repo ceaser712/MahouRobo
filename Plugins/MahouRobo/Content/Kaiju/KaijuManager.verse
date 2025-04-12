@@ -18,7 +18,7 @@ KaijuManager := class(creative_device):
 
     # Get the big kaiju and tell it to move to the next zone
     BigKaijuNextZone(index : int):void=
-        if (Target := waypoint_list[index].GetTransform()):
+        if (Target := waypoint_list[index].GetTransform().Translation):
             Print("Waypoint valid! Moving!")
             spawn:
                 BigKaiju.MoveToTarget(Target)

@@ -10,7 +10,6 @@ using { /Verse.org/Random }
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuSm := class(NPC_Kaiju):
     var isTargetInRange : logic = false
-    var lastTargetLocation : vector3 = vector3{X := 0.0, Y := 0.0, Z := 0.0}
     @editable projectile_speed : float := 20.0
     @editable projectile_damage : float := 5.0
     @editable move_speed : float := 20.0
@@ -30,9 +29,6 @@ BehaviorKaijuSm := class(NPC_Kaiju):
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
-            NPCChar.SetHealth(health)
-            NPCSpawnPoint := NPCChar.GetTransform().Translation
-    
             spawn { MovementLoop(NPCChar) }
 
     MovementLoop(NPCChar:fort_character)<suspends>:void =

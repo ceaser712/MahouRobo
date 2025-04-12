@@ -53,20 +53,15 @@ BehaviorKaijuLg := class(NPC_Kaiju):
     OnBegin<override>()<suspends>:void =
         Sleep(0.5)
         set point_value = 5
-    
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
-            NPCChar.SetHealth(health)
-            NPCSpawnPoint := NPCChar.GetTransform().Translation
-    
             spawn { MovementLoop(NPCChar) }
 
     MovementLoop(NPCChar:fort_character)<suspends>:void =
         Sleep(GetRandomFloat(0.0, 0.5))  # Desync
-    
         loop:
             Sleep(0.3)
             NPCLOC := NPCChar.GetTransform()
@@ -76,7 +71,6 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT],MaybeLocation:= NewTarget, NewLocation := MaybeLocation):
                 #if(TargetPos := NewTarget):
                     DistanceMoved := Distance(lastTargetLocation, NewTarget)
-    
                     if (DistanceMoved > 100.0):
                         set lastTargetLocation = NewTarget
                         spawn { DoMoveToTarget(NewLocation) }
