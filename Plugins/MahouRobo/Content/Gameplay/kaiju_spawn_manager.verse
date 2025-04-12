@@ -39,9 +39,11 @@ kaiju_spawn_manager := class(creative_device,event_listener):
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void=
         GlobalBus := GetGlobalBus()
-        GlobalBus.Subscribe("RoundStart", "kaiju_spawn_manager", Self)
-        GlobalBus.Subscribe("MidPhaseStart", "kaiju_spawn_manager", Self)
-        GlobalBus.Subscribe("BossPhaseStart", "kaiju_spawn_manager", Self)
+        GlobalBus.Subscribe("Small Kaiju", "kaiju_spawn_manager", Self)
+        GlobalBus.Subscribe("Transition Phase", "kaiju_spawn_manager", Self)
+        GlobalBus.Subscribe("Medium Kaiju Phase", "kaiju_spawn_manager", Self)
+        GlobalBus.Subscribe("Boss Transition", "kaiju_spawn_manager", Self)
+        GlobalBus.Subscribe("Big Kaiju Phase", "kaiju_spawn_manager", Self)
         for (Spawner:SmallSpawners):
             Spawner.SpawnedEvent.Subscribe(OnSpawn)
             Spawner.EliminatedEvent.Subscribe(OnElimination)
@@ -50,9 +52,6 @@ kaiju_spawn_manager := class(creative_device,event_listener):
             Spawner.EliminatedEvent.Subscribe(OnElimination)
         BossSpawner.SpawnedEvent.Subscribe(OnSpawn)
         BossSpawner.EliminatedEvent.Subscribe(OnElimination)
-
-        # spawn:
-        #     TestPhaseAdvance()
 
     OnSpawn(NewKaiju: agent):void =
         set NumKaiju += 1
@@ -83,41 +82,32 @@ kaiju_spawn_manager := class(creative_device,event_listener):
                     Spawner.DespawnAll(false)
                 break
         
-    TestPhaseAdvance()<suspends> : void =
-        PhaseEvents := array{"", "MidPhaseStart", "BossPhaseStart"}
-        loop:
-            if (NextPhaseEvent := PhaseEvents[CurrentPhase]):
-                Sleep(10.0)
-                GetGlobalBus().Notify(NextPhaseEvent, eventdata{})
-            else:
-                break
-
     OnEvent<override>(EventName: string, Data: eventdata): void =
+        Print(EventName)
         case (EventName):
-            "RoundStart" =>
+            "Small Kaiju" =>
                 set CurrentPhase = 1
                 spawn:
                     SpawnTask(1, SmallSpawners, SmallInterval, SmallLimit)
 
-                # Print("Start spawning small")
-
-            "MidPhaseStart" =>
+            "Transition Phase" =>
                 set CurrentPhase = 2
-                spawn:
-                    SpawnTask(2, MediumSpawners, MediumInterval, MediumLimit)
-
-                # Print("Start spawning medium")
-
                 # TODO make them all explode or something
                 for (Spawner : SmallSpawners):
                     Spawner.DespawnAll(false)
-            "BossPhaseStart" =>
-                set CurrentPhase = 3
-                BossSpawner.Spawn()
-                
-                # Print("Spawn boss")
 
+            "Medium Kaiju Phase" =>
+                spawn:
+                    SpawnTask(2, MediumSpawners, MediumInterval, MediumLimit)
+
+            "Boss Transition" =>
+                set CurrentPhase = 3
                 # TODO make them all explode or something
                 for (Spawner : MediumSpawners):
                     Spawner.DespawnAll(false)
+
+            "Big Kaiju Phase" =>
+                BossSpawner.Spawn()
+                
             _ => # default
+                Print("kaiju_spawn_manager subscribed to unhandled event {EventName}")
