@@ -18,4 +18,4 @@ debug_manager := class(creative_device):
 
     OnButtonInteract(Agent: agent, Msg: string): void =
         Print("Triggering Debug. Message: {Msg}")
-        GetGlobalBus().Notify(Msg, false)
+        GetGlobalBus().Notify(Msg, eventdata{Msg:= option{Msg}})

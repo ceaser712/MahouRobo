@@ -16,7 +16,7 @@ timer_manager<public> := class(creative_device,event_listener):
         GetGlobalBus().Subscribe("RoundStart","timer_manager", Self)
         GetGlobalBus().Subscribe("RoundEnd","timer_manager", Self)
     
-    OnEvent<override>(EventName: string, Data:any): void =
+    OnEvent<override>(EventName: string, Data:eventdata): void =
         Print("Received Event: {EventName}")
         if (EventName = "RoundStart"):
             set CancelTimer = false
@@ -25,21 +25,21 @@ timer_manager<public> := class(creative_device,event_listener):
             set CancelTimer = true
 
     StartTimer()<suspends>: void =
-        GetGlobalBus().Notify("TimerStarted", false)
+        GetGlobalBus().Notify("TimerStarted",eventdata{})
         Timer.SetActiveDuration(Duration)
         Timer.StartForAll()
         var Remaining: float = Duration
         loop:
             if(CancelTimer?):
                 Print("Timer canceled")
-                GetGlobalBus().Notify("TimerCanceled", false)
+                GetGlobalBus().Notify("TimerCanceled",eventdata{})
                 Timer.ResetForAll()
                 break
             if(Remaining <= 0.0):
                 Print("Timer complete")
-                GetGlobalBus().Notify("TimerCompleted", false)
+                GetGlobalBus().Notify("TimerCompleted",eventdata{})
                 Timer.ResetForAll()
                 break
-            Print("Timer: {Remaining} seconds left")
+           
             Sleep(1.0)
             set Remaining = Remaining - 1.0

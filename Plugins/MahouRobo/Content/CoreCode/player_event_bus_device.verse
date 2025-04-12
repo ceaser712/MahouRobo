@@ -14,18 +14,18 @@ HandleElimination(Player: agent, Result: elimination_result): void =
     Victim := Result.EliminatedCharacter
     if (MaybeKiller := Result.EliminatingCharacter?):
         if (MaybeKiller = Victim):
-            GetGlobalBus().Notify("PlayerSelfEliminated", Player)
+            GetGlobalBus().Notify("PlayerSelfEliminated",eventdata{Agent:= option{Player}})
         else if (VictimAgent := Victim.GetAgent[], KillerAgent := MaybeKiller.GetAgent[]):
-            GetGlobalBus().Notify("PlayerEliminatedPlayer", map{
+            GetGlobalBus().Notify("PlayerEliminatedPlayer", eventdata{AgentMap := option{map{
                 "killer" => KillerAgent,
                 "victim" => VictimAgent
-            })
+            }}})
     else:
-        GetGlobalBus().Notify("PlayerEliminatedCreature", map{
-            "killer" => Player
-        })
+        GetGlobalBus().Notify("PlayerEliminatedCreature", eventdata{Agent:= option{Player}})
 
 player_event_bus_device := class(creative_device):
+    @editable
+    var EliminationManager : elimination_manager_device = elimination_manager_device{}
 
     OnBegin<override>()<suspends>: void =
         Playspace := GetPlayspace()
@@ -38,7 +38,7 @@ player_event_bus_device := class(creative_device):
 
     OnPlayerJoined(Player: agent)<suspends>: void =
         Print("Player Joined:")
-        GetGlobalBus().Notify("PlayerJoined", Player)
+        GetGlobalBus().Notify("PlayerJoined", eventdata{Agent:= option{Player}})
 
         # Safe character bind with delay
         Sleep(0.2)
@@ -48,7 +48,7 @@ player_event_bus_device := class(creative_device):
 
     OnPlayerLeft(Player: agent): void =
         Print("Player Left Match")
-        GetGlobalBus().Notify("PlayerLeft", Player)
+        GetGlobalBus().Notify("PlayerLeft", eventdata{Agent:= option{Player}})
 
     OnPlayspaceElimination(Result: elimination_result): void =
         # Global catch if needed

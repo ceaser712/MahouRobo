@@ -17,4 +17,4 @@ trigger_event := class(creative_device):
         FireEvent()
 
     FireEvent(): void =
-        GetGlobalBus().Notify("MyEvent", false)
+        GetGlobalBus().Notify("MyEvent", eventdata{})

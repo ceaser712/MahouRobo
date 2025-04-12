@@ -7,6 +7,13 @@ using { /Verse.org/Simulation }
 
 # A Verse-authored creative device that can be placed in a level
 # Public event bus class, no side effects or creative_device inheritance
+eventdata<public>:=class():
+    AgentMap<public>: ?[string]agent = false
+    Agent<public>: ?agent = false
+    ValueF<public>: float = 0.0
+    ValueI<public>: int = 0
+    Msg<public>: ?string = false
+    
 event_bus<public> := class():
     var Listeners: [string][]listener_wrapper = map{}
 
@@ -27,7 +34,8 @@ event_bus<public> := class():
                     Print("Unsubscribed listener with Id: {Id} from event: {EventName}")
             if(set Listeners[EventName] = Remaining):
 
-    Notify<public>(EventName: string, Data: any): void =
+    Notify<public>(EventName: string, Data: eventdata): void =
+        Print("Notifying Event: {EventName}")
         if (Handlers := Listeners[EventName]):
             for (L : Handlers):
                 L.Handler.OnEvent(EventName,Data)

@@ -31,7 +31,7 @@ sound_manager_device := class(creative_device, event_listener):
         for(AudioDataSet:AudioData):
             GetGlobalBus().Subscribe(AudioDataSet.ID,"AudioPlayerDataset", Self)
 
-    OnEvent<override>(EventName: string, Data:any): void =
+    OnEvent<override>(EventName: string, Data:eventdata): void =
         #check the map
         if(audioData := AudioDataMap[EventName]):
             #check who the sound is for
