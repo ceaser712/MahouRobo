@@ -15,9 +15,7 @@ BehaviorKaijuMd := class(NPC_Kaiju):
     @editable projectile_speed : float := 20.0
     @editable projectile_damage : float := 5.0
     @editable move_speed : float := 20.0
-    var lastTargetLocation : vector3 = vector3{X := 0.0, Y := 0.0, Z := 0.0}
     var Attack1 : animation_sequence = (/anigab@fortnite.com/MahouRobo/Kaiju:)Yeti_Anim_EnemyArmature_Attack
-    var isMoving : logic = false
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
     OnBegin<override>()<suspends>:void =
@@ -39,30 +37,31 @@ BehaviorKaijuMd := class(NPC_Kaiju):
     
         loop:
             Sleep(0.3)
-    
+            NPCLOC := NPCChar.GetTransform()
+            NPCLOCT := NPCLOC.Translation
             if (isMoving?):
                 return
-            if (NewTarget := HelperFunc.FindNearestTarget[NPCChar], NewLocation := NewTarget.GetTransform()):
-                TargetPos := NewLocation.Translation
-                DistanceMoved := Distance(lastTargetLocation, TargetPos)
+            if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT],MaybeLocation:= NewTarget, NewLocation := MaybeLocation):
+                #if(TargetPos := NewTarget?):
+                    DistanceMoved := Distance(lastTargetLocation, NewTarget)
     
-                if (DistanceMoved > 100.0):
-                    set lastTargetLocation = TargetPos
-                    spawn { DoMoveToTarget(NewLocation) }
+                    if (DistanceMoved > 100.0):
+                        set lastTargetLocation = NewTarget
+                        spawn { DoMoveToTarget(NewLocation) }
 
-    DoMoveToTarget(NewLocation:transform)<suspends>:void =
+    DoMoveToTarget(NewLocation:vector3)<suspends>:void =
         set isMoving = true
         spawn{MoveToTarget(NewLocation)}  # Call and ignore result
         set isMoving = false
 
-    MoveToTarget<override>(NewLocation:transform)<suspends>:logic =
+    MoveToTarget<override>(NewLocation:vector3)<suspends>:logic =
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
             NPCNav := NPCChar.GetNavigatable[]
             NPCFocus := NPCChar.GetFocusInterface[]
         then:
-            PlayerPos := NewLocation.Translation
+            PlayerPos := NewLocation
             MonsterPos := NPCChar.GetTransform().Translation
             ToPlayer := PlayerPos - MonsterPos
             DistanceToPlayer := ToPlayer.Length()

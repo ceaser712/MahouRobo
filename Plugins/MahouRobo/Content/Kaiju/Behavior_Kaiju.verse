@@ -12,7 +12,8 @@ NPC_Kaiju := class(npc_behavior):
     @editable attack_recovery : float := 1.46
     @editable attack_delay_variance : float := 0.5  # How much +/- variance to apply
     @editable reach_radius : float := 300.0
-
+    var lastTargetLocation : vector3 = vector3{X := 0.0, Y := 0.0, Z := 0.0}
+    var isMoving : logic = false
     HelperFunc : KaijuHelper = KaijuHelper{}
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
@@ -28,10 +29,10 @@ NPC_Kaiju := class(npc_behavior):
             loop:
                 Sleep(0.1)
                 
-                if (NewTarget := HelperFunc.FindNearestTarget[NPCChar], NewAgent := NewTarget.GetTransform()):
+                if (NewTarget := HelperFunc.FindNearestTarget[NPCChar],MaybeAgent:= NewTarget?, NewAgent := MaybeAgent.GetTransform().Translation):
                     spawn{MoveToTarget(NewAgent)}
-                    spawn{NPCFocus.MaintainFocus(NewAgent.Translation)}
-                    NavTarget := MakeNavigationTarget(NewAgent.Translation)
+                    spawn{NPCFocus.MaintainFocus(NewAgent)}
+                    NavTarget := MakeNavigationTarget(NewAgent)
                     NavResult:= NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := reach_radius, ?AllowPartialPath:= false)
                     if(NavResult = navigation_result.Reached):
                         spawn{PlayAttackAnimation()}
@@ -49,7 +50,7 @@ NPC_Kaiju := class(npc_behavior):
                     "victim" => VictimAgent
                 }}})
 
-    MoveToTarget<public>(NewLocation:transform)<suspends>:logic = false
+    MoveToTarget<public>(NewLocation:vector3)<suspends>:logic = false
     PlayAttackAnimation<public>()<suspends>:logic = false
     
 

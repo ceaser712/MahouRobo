@@ -10,7 +10,6 @@ using { /Verse.org/Random }
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuSm := class(NPC_Kaiju):
     var isTargetInRange : logic = false
-    var lastTargetLocation : vector3 = vector3{X := 0.0, Y := 0.0, Z := 0.0}
     @editable health : float := 500.0
     @editable projectile_speed : float := 20.0
     @editable projectile_damage : float := 5.0
@@ -19,7 +18,6 @@ BehaviorKaijuSm := class(NPC_Kaiju):
     @editable safe_distance : float := 1000.0        # Ideal distance from player
     @editable min_attack_distance : float := 400.0  # When to attack
     @editable retreat_distance : float := 600.0     # How far to back up when too close
-
     var Attack1 : animation_sequence = (/anigab@fortnite.com/MahouRobo/Kaiju:)Demon_Anim_EnemyArmature_Attack
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
@@ -34,23 +32,42 @@ BehaviorKaijuSm := class(NPC_Kaiju):
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
             NPCChar.SetHealth(health)
             NPCSpawnPoint := NPCChar.GetTransform().Translation
-            loop:
-                Sleep(0.1)
-                if (NewTarget := HelperFunc.FindNearestTarget[NPCChar], NewLocation := NewTarget.GetTransform()):
-                    spawn{MoveToTarget(NewLocation)}
-                    Sleep(attack_recovery)
+    
+            spawn { MovementLoop(NPCChar) }
+
+    MovementLoop(NPCChar:fort_character)<suspends>:void =
+        Sleep(GetRandomFloat(0.0, 0.5))  # Desync
+    
+        loop:
+            Sleep(0.3)
+            NPCLOC := NPCChar.GetTransform()
+            NPCLOCT := NPCLOC.Translation
+            if (isMoving?):
+                return
+            if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT],MaybeLocation:= NewTarget, NewLocation := MaybeLocation):
+                #if(TargetPos := NewTarget?):
+                    DistanceMoved := Distance(lastTargetLocation, NewTarget)
+    
+                    if (DistanceMoved > 100.0):
+                        set lastTargetLocation = NewTarget
+                        spawn { DoMoveToTarget(NewLocation) }
+
+    DoMoveToTarget(NewLocation:vector3)<suspends>:void =
+        set isMoving = true
+        spawn{MoveToTarget(NewLocation)}  # Call and ignore result
+        set isMoving = false
 
     OnKaijuEliminated<override>(Result:elimination_result):void=
         (super:)OnKaijuEliminated(Result)
     
-    MoveToTarget<override>(NewLocation:transform)<suspends>:logic =
+    MoveToTarget<override>(NewLocation:vector3)<suspends>:logic =
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
             NPCNav := NPCChar.GetNavigatable[]
             NPCFocus := NPCChar.GetFocusInterface[]
         then:
-            PlayerPos := NewLocation.Translation
+            PlayerPos := NewLocation
             MonsterPos := NPCChar.GetTransform().Translation
             ToPlayer := PlayerPos - MonsterPos
             DistanceToPlayer := ToPlayer.Length()
