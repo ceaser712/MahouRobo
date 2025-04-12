@@ -59,21 +59,26 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
-            spawn { MovementLoop(NPCChar) }
+            spawn { MovementLoop() }
 
-    MovementLoop(NPCChar:fort_character)<suspends>:void =
+    MovementLoop()<suspends>:void =
         loop:
             Sleep(GetRandomFloat(3.0, 7.0)) # Desync
-            NPCLOC := NPCChar.GetTransform()
-            NPCLOCT := NPCLOC.Translation
-            if (isMoving?):
-                return
-            if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT],MaybeLocation:= NewTarget, NewLocation := MaybeLocation):
-                #if(TargetPos := NewTarget):
-                    DistanceMoved := Distance(lastTargetLocation, NewTarget)
-                    if (DistanceMoved > 100.0):
-                        set lastTargetLocation = NewTarget
-                        spawn { DoMoveToTarget(NewLocation) }
+
+            if:
+                NPCAgent := GetAgent[]
+                NPCChar := NPCAgent.GetFortCharacter[]
+                NPCLOC := NPCChar.GetTransform()
+                NPCLOCT := NPCLOC.Translation
+            then:
+                
+                if (isMoving?):
+                    return
+                if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT]):
+                        DistanceMoved := Distance(lastTargetLocation, NewTarget)
+                        if (DistanceMoved > 100.0):
+                            set lastTargetLocation = NewTarget
+                            spawn { DoMoveToTarget(NewTarget) }
 
     DoMoveToTarget(NewLocation:vector3)<suspends>:void =
         set isMoving = true

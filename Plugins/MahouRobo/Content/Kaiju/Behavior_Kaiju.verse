@@ -17,7 +17,7 @@ NPC_Kaiju := class(npc_behavior):
     @editable reach_radius : float := 300.0
     var lastTargetLocation : vector3 = vector3{X := 0.0, Y := 0.0, Z := 0.0}
     var isMoving : logic = false
-    @editable HelperFunc : KaijuHelper = KaijuHelper{}
+    var HelperFunc<public> : KaijuHelper = KaijuHelper{}
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
     OnBegin<override>()<suspends>:void={}
