@@ -2,11 +2,14 @@ using { /Fortnite.com/AI }
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Animation/PlayAnimation }
 using { /Verse.org/Simulation }
+using { /Verse.org/Simulation/Tags }
 using { /Verse.org/Assets }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Fortnite.com/Game }
 using {CoreCode}
 using { /Verse.org/Random }
+
+
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuSm := class(NPC_Kaiju):
     var isTargetInRange : logic = false
@@ -29,24 +32,28 @@ BehaviorKaijuSm := class(NPC_Kaiju):
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
-            spawn { MovementLoop(NPCChar) }
+            spawn { MovementLoop() }
 
-    MovementLoop(NPCChar:fort_character)<suspends>:void =
-        Sleep(GetRandomFloat(0.0, 0.5))  # Desync
-    
+    MovementLoop()<suspends>:void =
         loop:
-            Sleep(0.3)
-            NPCLOC := NPCChar.GetTransform()
-            NPCLOCT := NPCLOC.Translation
-            if (isMoving?):
-                return
-            if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT],MaybeLocation:= NewTarget, NewLocation := MaybeLocation):
-                #if(TargetPos := NewTarget?):
-                    DistanceMoved := Distance(lastTargetLocation, NewTarget)
-    
-                    if (DistanceMoved > 100.0):
-                        set lastTargetLocation = NewTarget
-                        spawn { DoMoveToTarget(NewLocation) }
+           
+            Sleep(GetRandomFloat(1.0, 5.0))  # Desync
+            if:
+                NPCAgent := GetAgent[]
+                NPCChar := NPCAgent.GetFortCharacter[]
+                NPCLOC := NPCChar.GetTransform()
+                NPCLOCT := NPCLOC.Translation
+            then:
+                
+                if (isMoving?):
+                    return
+         
+                if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT]):
+                        DistanceMoved := Distance(lastTargetLocation, NewTarget)
+        
+                        if (DistanceMoved > 100.0):
+                            set lastTargetLocation = NewTarget
+                            spawn { DoMoveToTarget(NewTarget) }
 
     DoMoveToTarget(NewLocation:vector3)<suspends>:void =
         set isMoving = true

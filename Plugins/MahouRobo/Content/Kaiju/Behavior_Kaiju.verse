@@ -2,10 +2,13 @@ using { /Fortnite.com/AI }
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Animation/PlayAnimation }
 using { /Verse.org/Simulation }
+using { /Verse.org/Simulation/Tags }
 using { /Verse.org/Assets }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Fortnite.com/Game }
 using {CoreCode}
+
+KaijuBehaviourTag:= class(tag){}
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 NPC_Kaiju := class(npc_behavior):
     @editable var point_value : int := 10
@@ -14,7 +17,7 @@ NPC_Kaiju := class(npc_behavior):
     @editable reach_radius : float := 300.0
     var lastTargetLocation : vector3 = vector3{X := 0.0, Y := 0.0, Z := 0.0}
     var isMoving : logic = false
-    HelperFunc : KaijuHelper = KaijuHelper{}
+    @editable HelperFunc : KaijuHelper = KaijuHelper{}
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
     OnBegin<override>()<suspends>:void={}

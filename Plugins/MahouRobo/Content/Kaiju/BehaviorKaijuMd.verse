@@ -2,6 +2,7 @@ using { /Fortnite.com/AI }
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Animation/PlayAnimation }
 using { /Verse.org/Simulation }
+using { /Verse.org/Simulation/Tags }
 using { /Verse.org/Assets }
 using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/SpatialMath }
@@ -32,7 +33,7 @@ BehaviorKaijuMd := class(NPC_Kaiju):
     MovementLoop()<suspends>:void =
         
         loop:
-            Sleep(GetRandomFloat(0.0, 0.5))  # Desync
+            Sleep(GetRandomFloat(1.0, 3.0))  # Desync
             if:
                 NPCAgent := GetAgent[]
                 NPCChar := NPCAgent.GetFortCharacter[]

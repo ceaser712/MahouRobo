@@ -4,6 +4,7 @@ using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
 using { /Fortnite.com/Animation/PlayAnimation }
 using { /Verse.org/Simulation }
+using { /Verse.org/Simulation/Tags }
 using { /Verse.org/Assets }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Fortnite.com/Game }
@@ -61,9 +62,8 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             spawn { MovementLoop(NPCChar) }
 
     MovementLoop(NPCChar:fort_character)<suspends>:void =
-        Sleep(GetRandomFloat(0.0, 0.5))  # Desync
         loop:
-            Sleep(0.3)
+            Sleep(GetRandomFloat(3.0, 7.0)) # Desync
             NPCLOC := NPCChar.GetTransform()
             NPCLOCT := NPCLOC.Translation
             if (isMoving?):

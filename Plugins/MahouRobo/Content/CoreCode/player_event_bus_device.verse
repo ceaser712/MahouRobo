@@ -31,6 +31,12 @@ player_event_bus_device := class(creative_device):
     
         Self.GetPlayspace().PlayerAddedEvent().Subscribe(OnPlayerAdded)
         Self.GetPlayspace().PlayerRemovedEvent().Subscribe(OnPlayerLeft)
+        Sleep(0.3)
+        for(Player:Self.GetPlayspace().GetPlayers()): 
+            if (Character := Player.GetFortCharacter[]):
+                CharacterElimCallback := elimination_callback{ Player := Player }
+                Character.EliminatedEvent().Subscribe(CharacterElimCallback.Handle)
+            Print("For body")
 
     OnPlayerAdded(Player: agent): void =
         Print("Player Added:")
@@ -41,7 +47,7 @@ player_event_bus_device := class(creative_device):
         GetGlobalBus().Notify("PlayerJoined", eventdata{Agent:= option{Player}})
 
         # Safe character bind with delay
-        Sleep(0.2)
+        Sleep(0.3)
         if (Character := Player.GetFortCharacter[]):
             CharacterElimCallback := elimination_callback{ Player := Player }
             Character.EliminatedEvent().Subscribe(CharacterElimCallback.Handle)

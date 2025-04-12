@@ -1,9 +1,11 @@
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Characters }
 using { /Verse.org/Simulation }
+using { /Verse.org/Simulation/Tags }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 
+KaiJuHelperTag:= class(tag){}
 KaijuHelper := class(creative_device):
 
     FindNearestTargetPosition(fromPosition:vector3)<decides><transacts>:vector3 =
