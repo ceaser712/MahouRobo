@@ -38,10 +38,8 @@ explosives_pool := class(creative_device,event_listener):
     OnEvent<override>(EventName: string, Data:eventdata): void =
         if(EventName = "MedKaijuAttacked"):
             if(MaybeAgent:= Data.Agent?,MaybeFArray:= Data.ValueFA?,Radius:= MaybeFArray[0], FOVAngleDegrees:= MaybeFArray[1], FCharacter:= MaybeAgent.GetFortCharacter[]):
-                ("Print All Good")
-                spawn{CheckPlayersInFrontAndDamage(FCharacter,Radius,FOVAngleDegrees,20.0)}
+                spawn{CheckPlayersInFrontAndDamage(FCharacter,Radius,FOVAngleDegrees,5.0)}
 
         if(EventName = "SmKaijuAttacked"):
             if(MaybeAgent:= Data.Agent?,MaybeFArray:= Data.ValueFA?,Radius:= MaybeFArray[0], FOVAngleDegrees:= MaybeFArray[1], FCharacter:= MaybeAgent.GetFortCharacter[]):
-                ("Print All Good")
-                spawn{CheckPlayersInFrontAndDamage(FCharacter,Radius,FOVAngleDegrees,7.0)}
+                spawn{CheckPlayersInFrontAndDamage(FCharacter,Radius,FOVAngleDegrees,10.0)}

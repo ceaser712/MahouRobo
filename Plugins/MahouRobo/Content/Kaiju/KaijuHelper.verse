@@ -13,7 +13,6 @@ KaijuHelper := class(creative_device):
 
         for(KT:KaiJuTags,Kai:=NPC_Kaiju[KT]):
             set Kai.HelperFunc = Self;
-            Print("For body")
 
     FindNearestTargetPosition(fromPosition:vector3)<decides><transacts>:vector3 =
         DevicePlayspace := Self.GetPlayspace()
