@@ -44,7 +44,6 @@ BehaviorKaijuMd := class(NPC_Kaiju):
                     return
                 if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT]):
                         DistanceMoved := Distance(lastTargetLocation, NewTarget)
-        
                         if (DistanceMoved > 100.0):
                             set lastTargetLocation = NewTarget
                             spawn { DoMoveToTarget(NewTarget) }

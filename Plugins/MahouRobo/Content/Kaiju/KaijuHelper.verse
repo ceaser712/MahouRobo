@@ -8,6 +8,13 @@ using { /UnrealEngine.com/Temporary/SpatialMath }
 KaiJuHelperTag:= class(tag){}
 KaijuHelper := class(creative_device):
 
+    OnBegin<override>()<suspends>:void =
+        KaiJuTags:=FindCreativeObjectsWithTag(KaijuBehaviourTag{})
+
+        for(KT:KaiJuTags,Kai:=NPC_Kaiju[KT]):
+            set Kai.HelperFunc = Self;
+            Print("For body")
+
     FindNearestTargetPosition(fromPosition:vector3)<decides><transacts>:vector3 =
         DevicePlayspace := Self.GetPlayspace()
         var ClosestPos : vector3 = vector3{X:= 0.0,Y:= 0.0,Z:= 0.0}
