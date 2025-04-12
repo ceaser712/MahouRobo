@@ -9,14 +9,15 @@ using { /Fortnite.com/Game }
  
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuLg := class(NPC_Kaiju):
-    @editable health : float = 500.0
     @editable projectile_asset : creative_prop_asset = DefaultCreativePropAsset
     @editable projectile_speed : float = 5.0
     @editable projectile_damage : float = 5.0
     @editable move_speed : float = 20.0
+    @editable waypoint_list : []creative_prop = array{}
 
     var Attack1 : animation_sequence = (/anigab@fortnite.com/MahouRobo/Kaiju:)Giant_Anim_EnemyArmature_Attack
 
+    # Fire projectile at targeted player
     FireProjectile()<suspends>:void =
         if:
             NPCAgent := GetAgent[]
@@ -36,6 +37,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
                         return
                     DamageCheck(NewProp)
     
+    # Projectile damage check and damage proc
     DamageCheck(Prop : creative_prop)<suspends>:void =
         loop:
             Sleep(0.0)
@@ -52,14 +54,17 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
-            NPCChar.SetHealth(health)
-            NPCSpawnPoint := NPCChar.GetTransform().Translation
+            var Counter : int = 0
             loop:
-                Sleep(0.1)
-                if (NewTarget := HelperFunc.FindNearestTarget[NPCChar], NewLocation := NewTarget.GetTransform()):
-                    spawn{MoveToTarget(NewLocation)}
-                    Sleep(0.46)
-    
+                Print("Moving to waypoint: " + ToString(Counter))
+                if (Target := waypoint_list[Counter].GetTransform()):
+                    MoveToTarget(Target)
+                set Counter += 1
+                if (Counter >= waypoint_list.Length):
+                    Print("End of waypoint list, looping around...")
+                    set Counter = 0
+                Sleep(10.0)
+        
     MoveToTarget<override>(NewLocation:transform)<suspends>:logic =
         if:
             NPCAgent := GetAgent[]
@@ -73,10 +78,6 @@ BehaviorKaijuLg := class(NPC_Kaiju):
                     spawn{NPCFocus.MaintainFocus(NewLocation.Translation)}
                     NavTarget := MakeNavigationTarget(NewLocation.Translation)
                     NavResult:= NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := reach_radius)
-                    if(NavResult = navigation_result.Reached):
-                        spawn{PlayAttackAnimation()}
-                        Sleep(attack_recovery)
-                        FireProjectile()
                     return true
         else:
             return false
@@ -91,7 +92,6 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             return true
         else:
             return false
-                
 
     OnKaijuEliminated<override>(Result:elimination_result):void=
         (super:)OnKaijuEliminated(Result)
@@ -99,4 +99,4 @@ BehaviorKaijuLg := class(NPC_Kaiju):
     # This function runs when the NPC is despawned or eliminated from the world.
     OnEnd<override>():void=
         # TODO: Replace this with your code
-        Print("Goodbye, NPC!")
+        Print("Big Kaiju despawned")
