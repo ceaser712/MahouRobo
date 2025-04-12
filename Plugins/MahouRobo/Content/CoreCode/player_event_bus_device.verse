@@ -28,20 +28,26 @@ player_event_bus_device := class(creative_device):
     var EliminationManager : elimination_manager_device = elimination_manager_device{}
 
     OnBegin<override>()<suspends>: void =
-        Playspace := GetPlayspace()
-        Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
-        Playspace.PlayerRemovedEvent().Subscribe(OnPlayerLeft)
+    
+        Self.GetPlayspace().PlayerAddedEvent().Subscribe(OnPlayerAdded)
+        Self.GetPlayspace().PlayerRemovedEvent().Subscribe(OnPlayerLeft)
+        Sleep(0.3)
+        for(Player:Self.GetPlayspace().GetPlayers()): 
+            if (Character := Player.GetFortCharacter[]):
+                CharacterElimCallback := elimination_callback{ Player := Player }
+                Character.EliminatedEvent().Subscribe(CharacterElimCallback.Handle)
+            Print("For body")
 
     OnPlayerAdded(Player: agent): void =
-        spawn:
-            OnPlayerJoined(Player)
+        Print("Player Added:")
+        spawn{OnPlayerJoined(Player)}
 
     OnPlayerJoined(Player: agent)<suspends>: void =
         Print("Player Joined:")
         GetGlobalBus().Notify("PlayerJoined", eventdata{Agent:= option{Player}})
 
         # Safe character bind with delay
-        Sleep(0.2)
+        Sleep(0.3)
         if (Character := Player.GetFortCharacter[]):
             CharacterElimCallback := elimination_callback{ Player := Player }
             Character.EliminatedEvent().Subscribe(CharacterElimCallback.Handle)
