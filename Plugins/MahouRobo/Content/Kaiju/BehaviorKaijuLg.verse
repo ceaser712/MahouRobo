@@ -1,11 +1,11 @@
 using { /Fortnite.com/AI }
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
+using { /Fortnite.com/Game }
 using { /Fortnite.com/Animation/PlayAnimation }
 using { /Verse.org/Simulation }
 using { /Verse.org/Assets }
 using { /UnrealEngine.com/Temporary/SpatialMath }
-using { /Fortnite.com/Game }
  
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuLg := class(NPC_Kaiju):
@@ -14,6 +14,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
     @editable projectile_damage : float = 5.0
     @editable move_speed : float = 20.0
     @editable waypoint_list : []creative_prop = array{}
+    @editable waypoint_wait : float = 15.0
 
     var Attack1 : animation_sequence = (/anigab@fortnite.com/MahouRobo/Kaiju:)Giant_Anim_EnemyArmature_Attack
 
@@ -63,8 +64,9 @@ BehaviorKaijuLg := class(NPC_Kaiju):
                 if (Counter >= waypoint_list.Length):
                     Print("End of waypoint list, looping around...")
                     set Counter = 0
-                Sleep(10.0)
-        
+                Sleep(waypoint_wait)
+    
+    # Move to a location based on the transform passed to it
     MoveToTarget<override>(NewLocation:transform)<suspends>:logic =
         if:
             NPCAgent := GetAgent[]
@@ -82,6 +84,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
         else:
             return false
     
+    # Play defined attack animation
     PlayAttackAnimation<override>()<suspends>:logic = 
         if:
             NPCAgent := GetAgent[]
@@ -93,10 +96,10 @@ BehaviorKaijuLg := class(NPC_Kaiju):
         else:
             return false
 
+    # Event handler for elimination
     OnKaijuEliminated<override>(Result:elimination_result):void=
         (super:)OnKaijuEliminated(Result)
 
     # This function runs when the NPC is despawned or eliminated from the world.
     OnEnd<override>():void=
-        # TODO: Replace this with your code
         Print("Big Kaiju despawned")
