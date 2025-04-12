@@ -53,26 +53,35 @@ teams_manager := class(creative_device,event_listener):
                     if(Char.TeleportTo[PadLocation.Translation, rotation{}]):
 
     StartTeamSelection(PlayerAgent:agent)<suspends>:void=
-        Print("Starting Team Selection in 5 Seconds")
-        #LobbySelector.ChangeTeamAndClass(PlayerAgent)
+        LobbySelector.ChangeTeamAndClass(PlayerAgent)
         TeleportToRandomPad(PlayerAgent,PreTeamSpawnPads)
         TeamSelect.InitiateConversation(PlayerAgent)
 
     OnPlayerChoseTeam(Player:agent, Index:int):void=
-        Print("PlayerChose Team: {Index}")
-        if(GetPlayspace().GetTeamCollection().AddToTeam[Player,Teams[Index]]):
-            if(Index = 1):
-                MagicalGirlSelector.ChangeTeamAndClass(Player)
-                TeleportToRandomPad(Player, MagicalGirlSpawnPads)
-            if(Index = 2):
-                RobotSelector.ChangeTeamAndClass(Player)
-                TeleportToRandomPad(Player, RobotTeamSpawnPads)
+
+        Print("HowManyTeams {Teams.Length}")
+        if(Index = 1):
+            Print("Player Chose Robots")
+            RobotSelector.ChangeTeamAndClass(Player)
+            TeleportToRandomPad(Player, RobotTeamSpawnPads)
             AssignTeamLoadout(Player)
 
+        if(Index = 2):
+            Print("Player Chose Magical Girls")
+            MagicalGirlSelector.ChangeTeamAndClass(Player)
+            TeleportToRandomPad(Player, MagicalGirlSpawnPads)
+            AssignTeamLoadout(Player)
+
+        for(i := 0..Teams.Length):
+            TeamCollection:=GetPlayspace().GetTeamCollection()
+                if(TeamCollection.IsOnTeam[Player,Teams[i]]):
+                    Print("Player is on Team {i}")
+               
     AssignTeamLoadout(InPlayer : agent) : void = 
         teamCollection := GetPlayspace().GetTeamCollection()
-        n := Min(Teams.Length, TeamLoadouts.Length)
-        for (i := 0..n):
-            if (teamCollection.IsOnTeam[InPlayer, Teams[i]]):
-                if (loadout := TeamLoadouts[i]):
-                    loadout.GrantItem(InPlayer)
+        if(teamCollection.IsOnTeam[InPlayer, Teams[0]]):
+            if (loadout := TeamLoadouts[1]):
+                loadout.GrantItem(InPlayer)
+        if(teamCollection.IsOnTeam[InPlayer, Teams[1]]):
+            if (loadout := TeamLoadouts[0]):
+                loadout.GrantItem(InPlayer)

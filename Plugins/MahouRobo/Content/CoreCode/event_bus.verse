@@ -10,7 +10,8 @@ using { /Verse.org/Simulation }
 eventdata<public>:=class():
     AgentMap<public>: ?[string]agent = false
     Agent<public>: ?agent = false
-    Value<public>: ?float =false
+    ValueF<public>: float = 0.0
+    ValueI<public>: int = 0
     Msg<public>: ?string = false
     
 event_bus<public> := class():
