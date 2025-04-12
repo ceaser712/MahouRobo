@@ -12,6 +12,7 @@ eventdata<public>:=class():
     AgentMap<public>: ?[string]agent = false
     Agent<public>: ?agent = false
     ValueF<public>: float = 0.0
+    ValueFA<public>: ?[]float = false
     ValueI<public>: int = 0
     Location<public>: ?vector3 = false
     Msg<public>: ?string = false

@@ -10,6 +10,7 @@ using {CoreCode}
 NPC_Kaiju := class(npc_behavior):
     @editable var point_value : int := 10
     @editable attack_recovery : float := 1.46
+    @editable attack_delay_variance : float := 0.5  # How much +/- variance to apply
     @editable reach_radius : float := 300.0
 
     HelperFunc : KaijuHelper = KaijuHelper{}
@@ -50,6 +51,7 @@ NPC_Kaiju := class(npc_behavior):
 
     MoveToTarget<public>(NewLocation:transform)<suspends>:logic = false
     PlayAttackAnimation<public>()<suspends>:logic = false
+    
 
     # This function runs when the NPC is despawned or eliminated from the world.
     OnEnd<override>():void=

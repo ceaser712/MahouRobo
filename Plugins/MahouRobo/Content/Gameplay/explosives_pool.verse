@@ -5,6 +5,7 @@ using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using {CoreCode}
 using { /Verse.org }
+using { /Fortnite.com/Characters }
 # See https://dev.epicgames.com/documentation/en-us/uefn/create-your-own-device-in-verse for how to create a verse device.
 
 # A Verse-authored creative device that can be placed in a level
@@ -15,21 +16,27 @@ explosives_pool := class(creative_device,event_listener):
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void=
         GetGlobalBus().Subscribe("MedKaijuAttacked","Explosives_pool", Self)
-      
-    TeleportToAndExplode(Instigator:agent,Location:vector3)<suspends>:void=
-        if (Explosives.Length > 0):
-            Shuffled := Random.Shuffle(Explosives)
-            if (explosive := Shuffled[0]):
-                RandomExplosive:=explosive
-                Sleep(0.1)
-                if(RandomExplosive.TeleportTo[Location,rotation{}]):
-                    RandomExplosive.Explode(Instigator)
-                Sleep(1.0)
-                if(RandomExplosive.TeleportTo[Home,rotation{}]):
-                    RandomExplosive.Reset()
-                
 
+    CheckPlayersInFrontAndDamage(NPCChar:fort_character, Radius:float, FOVAngleDegrees:float)<suspends>:void =
+        MonsterTransform := NPCChar.GetTransform()
+        MonsterForward := MonsterTransform.Rotation.GetLocalForward()
+    
+        for (Player : GetPlayspace().GetPlayers(), PlayerChar := Player.GetFortCharacter[]):
+            PlayerPos := PlayerChar.GetTransform().Translation
+            ToPlayer := PlayerPos - MonsterTransform.Translation
+    
+            DistanceToPlayer := ToPlayer.Length()
+            if (DistanceToPlayer > Radius):
+    
+            DirToPlayer := ToPlayer / DistanceToPlayer
+            Dot := DotProduct(MonsterForward, DirToPlayer)
+            FOVThreshold := Cos(DegreesToRadians(FOVAngleDegrees / 2.0))
+    
+            if (Dot >= FOVThreshold):
+                PlayerChar.Damage(20.0)
+                
     OnEvent<override>(EventName: string, Data:eventdata): void =
         if(EventName = "MedKaijuAttacked"):
-            if(MaybeLocation:= Data.Location?, MaybeAgent:= Data.Agent?):
-                spawn{TeleportToAndExplode(MaybeAgent,MaybeLocation)}
+            if(MaybeAgent:= Data.Agent?,MaybeFArray:= Data.ValueFA?,Radius:= MaybeFArray[0], FOVAngleDegrees:= MaybeFArray[1], FCharacter:= MaybeAgent.GetFortCharacter[]):
+                ("Print All Good")
+                spawn{CheckPlayersInFrontAndDamage(FCharacter,Radius,FOVAngleDegrees)}

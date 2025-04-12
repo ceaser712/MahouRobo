@@ -7,18 +7,22 @@ using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Fortnite.com/Devices }
 using {CoreCode}
+using { /Verse.org/Random }
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuMd := class(NPC_Kaiju):
+    var isTargetInRange : logic = false
     @editable health : float := 500.0
     @editable projectile_speed : float := 20.0
     @editable projectile_damage : float := 5.0
     @editable move_speed : float := 20.0
-
+    var lastTargetLocation : vector3 = vector3{X := 0.0, Y := 0.0, Z := 0.0}
     var Attack1 : animation_sequence = (/anigab@fortnite.com/MahouRobo/Kaiju:)Yeti_Anim_EnemyArmature_Attack
+    var isMoving : logic = false
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
-    OnBegin<override>()<suspends>:void=
+    OnBegin<override>()<suspends>:void =
         set point_value = 5
+    
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
@@ -26,12 +30,45 @@ BehaviorKaijuMd := class(NPC_Kaiju):
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
             NPCChar.SetHealth(health)
             NPCSpawnPoint := NPCChar.GetTransform().Translation
-            loop:
-                Sleep(0.1)
-                if (NewTarget := HelperFunc.FindNearestTarget[NPCChar], NewLocation := NewTarget.GetTransform()):
-                    spawn{MoveToTarget(NewLocation)}
-                    Sleep(2.0)
     
+            spawn { MovementLoop(NPCChar) }
+                    
+    AttackLoop(NPCChar:fort_character)<suspends>:void =
+        Sleep(GetRandomFloat(0.0, 0.5))  # Desync from other monsters
+    
+        loop:
+            Sleep(0.1)
+    
+            if (isTargetInRange?):
+                spawn { PlayAttackAnimation() }
+                set isTargetInRange = false
+    
+                # Wait for recovery + random variance before next attack
+                Base := attack_recovery
+                Variance := GetRandomFloat(-attack_delay_variance, attack_delay_variance)
+                Sleep(Base + Variance)
+
+    MovementLoop(NPCChar:fort_character)<suspends>:void =
+        Sleep(GetRandomFloat(0.0, 0.5))  # Desync
+    
+        loop:
+            Sleep(0.3)
+    
+            if (isMoving?):
+                return
+            if (NewTarget := HelperFunc.FindNearestTarget[NPCChar], NewLocation := NewTarget.GetTransform()):
+                TargetPos := NewLocation.Translation
+                DistanceMoved := Distance(lastTargetLocation, TargetPos)
+    
+                if (DistanceMoved > 100.0):
+                    set lastTargetLocation = TargetPos
+                    spawn { DoMoveToTarget(NewLocation) }
+
+    DoMoveToTarget(NewLocation:transform)<suspends>:void =
+        set isMoving = true
+        spawn{MoveToTarget(NewLocation)}  # Call and ignore result
+        set isMoving = false
+
     MoveToTarget<override>(NewLocation:transform)<suspends>:logic =
         if:
             NPCAgent := GetAgent[]
@@ -39,28 +76,62 @@ BehaviorKaijuMd := class(NPC_Kaiju):
             NPCNav := NPCChar.GetNavigatable[]
             NPCFocus := NPCChar.GetFocusInterface[]
         then:
-            NPCSpawnPoint := NPCChar.GetTransform().Translation
-            loop:
-                Sleep(0.1)
-                    spawn{NPCFocus.MaintainFocus(NewLocation.Translation)}
-                    NavTarget := MakeNavigationTarget(NewLocation.Translation)
-                    NavResult:= NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := reach_radius)
-                    if(NavResult = navigation_result.Reached or NavResult = navigation_result.PartiallyReached):
-                        spawn{PlayAttackAnimation()}
-                        Sleep(2.0)
-                    return true
+            PlayerPos := NewLocation.Translation
+            MonsterPos := NPCChar.GetTransform().Translation
+            ToPlayer := PlayerPos - MonsterPos
+            DistanceToPlayer := ToPlayer.Length()
+    
+            if (DistanceToPlayer < 250.0):
+                spawn { NPCFocus.MaintainFocus(PlayerPos) }
+                spawn { PlayAttackAnimation() }
+                return true
+    
+            Direction := ToPlayer / DistanceToPlayer
+            StopShortDistance := 200.0
+            TargetPos := PlayerPos - (Direction * StopShortDistance)
+    
+            spawn { NPCFocus.MaintainFocus(PlayerPos) }
+    
+            NavTarget := MakeNavigationTarget(TargetPos)
+            NavResult := NPCNav.NavigateTo(
+                NavTarget,
+                ?MovementType := movement_types.Running,
+                ?ReachRadius := 80.0,
+                ?AllowPartialPath := true
+            )
+    
+            if (NavResult = navigation_result.Reached):
+                spawn { PlayAttackAnimation() }
+                return true
+            else:
+                return false
         else:
             return false
-    
-    PlayAttackAnimation<override>()<suspends>:logic = 
+
+    PlayAttackAnimation<override>()<suspends>:logic =
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
             NPCAnim := NPCChar.GetPlayAnimationController[]
         then:
-            NPCAnim.Play(Attack1)
-            GetGlobalBus().Notify("MedKaijuAttacked", eventdata{Agent:=option{NPCAgent} ,Location:= option{NPCChar.GetTransform().Translation + vector3{X:=-0.971346,Y:=-240.007166,Z:=103.402348}}})
-            return true
+            # Wait before attacking to add unpredictability
+            Delay := GetRandomFloat(0.1, attack_delay_variance)
+            Sleep(Delay)
+    
+            result := NPCAnim.PlayAndAwait(Attack1)
+    
+            if (result = play_animation_result.Completed):
+                set lastTargetLocation = vector3{X := 0.0, Y := 0.0, Z := 0.0}
+                GetGlobalBus().Notify(
+                    "MedKaijuAttacked",
+                    eventdata{
+                        Agent := option{NPCAgent},
+                        ValueFA := option{array{60.0, 60.0}}
+                    }
+                )
+                return true
+            else:
+                return false
         else:
             return false
 

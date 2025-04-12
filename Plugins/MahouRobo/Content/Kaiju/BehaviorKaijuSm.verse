@@ -30,7 +30,7 @@ BehaviorKaijuSm := class(NPC_Kaiju):
                 Sleep(0.1)
                 if (NewTarget := HelperFunc.FindNearestTarget[NPCChar], NewLocation := NewTarget.GetTransform()):
                     spawn{MoveToTarget(NewLocation)}
-                    Sleep(0.46)
+                    Sleep(attack_recovery)
 
     OnKaijuEliminated<override>(Result:elimination_result):void=
         (super:)OnKaijuEliminated(Result)
@@ -50,7 +50,6 @@ BehaviorKaijuSm := class(NPC_Kaiju):
                     NavResult:= NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := reach_radius)
                     if(NavResult = navigation_result.Reached):
                         spawn{PlayAttackAnimation()}
-                        Sleep(attack_recovery)
                     return true
         else:
             return false

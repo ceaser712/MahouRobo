@@ -33,8 +33,8 @@ player_event_bus_device := class(creative_device):
         Playspace.PlayerRemovedEvent().Subscribe(OnPlayerLeft)
 
     OnPlayerAdded(Player: agent): void =
-        spawn:
-            OnPlayerJoined(Player)
+        Print("Player Added:")
+        spawn{OnPlayerJoined(Player)}
 
     OnPlayerJoined(Player: agent)<suspends>: void =
         Print("Player Joined:")
