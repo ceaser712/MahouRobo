@@ -6,7 +6,9 @@ using { /Fortnite.com/Animation/PlayAnimation }
 using { /Verse.org/Simulation }
 using { /Verse.org/Assets }
 using { /UnrealEngine.com/Temporary/SpatialMath }
- 
+using { /Fortnite.com/Game }
+using { /Verse.org/Random }
+using { CoreCode}
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuLg := class(NPC_Kaiju):
     @editable projectile_asset : creative_prop_asset = DefaultCreativePropAsset
@@ -48,40 +50,78 @@ BehaviorKaijuLg := class(NPC_Kaiju):
                     Prop.Dispose()
 
    
-    # This function runs when the NPC is spawned in the world and ready to follow a behavior.
-    OnBegin<override>()<suspends>:void=
+    OnBegin<override>()<suspends>:void =
         Sleep(0.5)
+        set point_value = 5
+    
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
-            var Counter : int = 0
-            loop:
-                Print("Moving to waypoint: " + ToString(Counter))
-                if (Target := waypoint_list[Counter].GetTransform()):
-                    MoveToTarget(Target)
-                set Counter += 1
-                if (Counter >= waypoint_list.Length):
-                    Print("End of waypoint list, looping around...")
-                    set Counter = 0
-                Sleep(waypoint_wait)
+            NPCChar.SetHealth(health)
+            NPCSpawnPoint := NPCChar.GetTransform().Translation
     
-    # Move to a location based on the transform passed to it
-    MoveToTarget<override>(NewLocation:transform)<suspends>:logic =
+            spawn { MovementLoop(NPCChar) }
+
+    MovementLoop(NPCChar:fort_character)<suspends>:void =
+        Sleep(GetRandomFloat(0.0, 0.5))  # Desync
+    
+        loop:
+            Sleep(0.3)
+            NPCLOC := NPCChar.GetTransform()
+            NPCLOCT := NPCLOC.Translation
+            if (isMoving?):
+                return
+            if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT],MaybeLocation:= NewTarget, NewLocation := MaybeLocation):
+                #if(TargetPos := NewTarget):
+                    DistanceMoved := Distance(lastTargetLocation, NewTarget)
+    
+                    if (DistanceMoved > 100.0):
+                        set lastTargetLocation = NewTarget
+                        spawn { DoMoveToTarget(NewLocation) }
+
+    DoMoveToTarget(NewLocation:vector3)<suspends>:void =
+        set isMoving = true
+        spawn{MoveToTarget(NewLocation)}  # Call and ignore result
+        set isMoving = false
+
+    MoveToTarget<override>(NewLocation:vector3)<suspends>:logic =
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
             NPCNav := NPCChar.GetNavigatable[]
             NPCFocus := NPCChar.GetFocusInterface[]
         then:
-            NPCSpawnPoint := NPCChar.GetTransform().Translation
-            loop:
-                Sleep(0.1)
-                    spawn{NPCFocus.MaintainFocus(NewLocation.Translation)}
-                    NavTarget := MakeNavigationTarget(NewLocation.Translation)
-                    NavResult:= NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := reach_radius)
-                    return true
+            PlayerPos := NewLocation
+            MonsterPos := NPCChar.GetTransform().Translation
+            ToPlayer := PlayerPos - MonsterPos
+            DistanceToPlayer := ToPlayer.Length()
+    
+            if (DistanceToPlayer < 250.0):
+                spawn { NPCFocus.MaintainFocus(PlayerPos) }
+                spawn { PlayAttackAnimation() }
+                return true
+    
+            Direction := ToPlayer / DistanceToPlayer
+            StopShortDistance := 200.0
+            TargetPos := PlayerPos - (Direction * StopShortDistance)
+    
+            spawn { NPCFocus.MaintainFocus(PlayerPos) }
+    
+            NavTarget := MakeNavigationTarget(TargetPos)
+            NavResult := NPCNav.NavigateTo(
+                NavTarget,
+                ?MovementType := movement_types.Running,
+                ?ReachRadius := 80.0,
+                ?AllowPartialPath := true
+            )
+    
+            if (NavResult = navigation_result.Reached):
+                spawn { PlayAttackAnimation() }
+                return true
+            else:
+                return false
         else:
             return false
     
@@ -92,8 +132,24 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             NPCChar := NPCAgent.GetFortCharacter[]
             NPCAnim := NPCChar.GetPlayAnimationController[]
         then:
-            NPCAnim.Play(Attack1)
-            return true
+            # Wait before attacking to add unpredictability
+            Delay := GetRandomFloat(0.1, attack_delay_variance)
+            Sleep(Delay)
+    
+            result := NPCAnim.PlayAndAwait(Attack1)
+    
+            if (result = play_animation_result.Completed):
+                set lastTargetLocation = vector3{X := 0.0, Y := 0.0, Z := 0.0}
+                GetGlobalBus().Notify(
+                    "LrgKaijuAttacked",
+                    eventdata{
+                        Agent := option{NPCAgent},
+                        ValueFA := option{array{60.0, 60.0}}
+                    }
+                )
+                return true
+            else:
+                return false
         else:
             return false
 
