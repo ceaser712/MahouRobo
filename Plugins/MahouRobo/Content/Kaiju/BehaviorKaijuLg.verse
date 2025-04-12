@@ -61,10 +61,9 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             spawn { MovementLoop(NPCChar) }
 
     MovementLoop(NPCChar:fort_character)<suspends>:void =
-        Sleep(GetRandomFloat(0.0, 0.5))  # Desync
-    
+
         loop:
-            Sleep(0.3)
+            Sleep(GetRandomFloat(0.3, 0.7))  # Desync
             NPCLOC := NPCChar.GetTransform()
             NPCLOCT := NPCLOC.Translation
             if (isMoving?):

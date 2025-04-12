@@ -7,7 +7,7 @@ using { /UnrealEngine.com/Temporary/SpatialMath }
 KaijuHelper := class(creative_device):
 
     FindNearestTargetPosition(fromPosition:vector3)<decides><transacts>:vector3 =
-        DevicePlayspace := GetPlayspace()
+        DevicePlayspace := Self.GetPlayspace()
         var ClosestPos : vector3 = vector3{X:= 0.0,Y:= 0.0,Z:= 0.0}
         var ClosestDistance : float = 999999.0
     
@@ -25,7 +25,7 @@ KaijuHelper := class(creative_device):
     FindNearestTarget(FC : fort_character)<decides><transacts> : ?fort_character =
         var PossibleTarget : ?fort_character = false
         var CheckRange : float = 5000.0
-        for(Player : GetPlayspace().GetPlayers()):
+        for(Player : Self.GetPlayspace().GetPlayers()):
             if:
                 PlayerFC := Player.GetFortCharacter[]
                 DistanceDifference := Distance(PlayerFC.GetTransform().Translation, FC.GetTransform().Translation) < CheckRange

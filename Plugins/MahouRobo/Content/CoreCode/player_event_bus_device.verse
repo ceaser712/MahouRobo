@@ -28,9 +28,9 @@ player_event_bus_device := class(creative_device):
     var EliminationManager : elimination_manager_device = elimination_manager_device{}
 
     OnBegin<override>()<suspends>: void =
-        Playspace := GetPlayspace()
-        Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
-        Playspace.PlayerRemovedEvent().Subscribe(OnPlayerLeft)
+    
+        Self.GetPlayspace().PlayerAddedEvent().Subscribe(OnPlayerAdded)
+        Self.GetPlayspace().PlayerRemovedEvent().Subscribe(OnPlayerLeft)
 
     OnPlayerAdded(Player: agent): void =
         Print("Player Added:")

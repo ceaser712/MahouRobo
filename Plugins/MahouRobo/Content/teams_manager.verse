@@ -32,7 +32,7 @@ teams_manager := class(creative_device,event_listener):
         GetGlobalBus().Subscribe("RoundStart","timer_manager", Self)
         GetGlobalBus().Subscribe("PlayerJoined","timer_manager", Self)
         TeamSelect.OnConversationEvent.Subscribe(OnPlayerChoseTeam)
-        set Teams = GetPlayspace().GetTeamCollection().GetTeams()
+        set Teams = Self.GetPlayspace().GetTeamCollection().GetTeams()
 
     OnEvent<override>(EventName: string, Data:eventdata) : void =
         if (EventName = "RoundStart"):
@@ -73,12 +73,12 @@ teams_manager := class(creative_device,event_listener):
             AssignTeamLoadout(Player)
 
         for(i := 0..Teams.Length):
-            TeamCollection:=GetPlayspace().GetTeamCollection()
+            TeamCollection:=Self.GetPlayspace().GetTeamCollection()
                 if(TeamCollection.IsOnTeam[Player,Teams[i]]):
                     Print("Player is on Team {i}")
                
     AssignTeamLoadout(InPlayer : agent) : void = 
-        teamCollection := GetPlayspace().GetTeamCollection()
+        teamCollection := Self.GetPlayspace().GetTeamCollection()
         if(teamCollection.IsOnTeam[InPlayer, Teams[0]]):
             if (loadout := TeamLoadouts[0]):
                 loadout.GrantItem(InPlayer)

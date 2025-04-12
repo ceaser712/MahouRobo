@@ -17,28 +17,8 @@ NPC_Kaiju := class(npc_behavior):
     HelperFunc : KaijuHelper = KaijuHelper{}
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
-    OnBegin<override>()<suspends>:void=
-        if:
-            NPCAgent := GetAgent[]
-            NPCChar := NPCAgent.GetFortCharacter[]
-            NPCNav := NPCChar.GetNavigatable[]
-            NPCFocus := NPCChar.GetFocusInterface[]
-            NPCAnim := NPCChar.GetPlayAnimationController[]
-        then:
-            NPCSpawnPoint := NPCChar.GetTransform().Translation
-            loop:
-                Sleep(0.1)
-                
-                if (NewTarget := HelperFunc.FindNearestTarget[NPCChar],MaybeAgent:= NewTarget?, NewAgent := MaybeAgent.GetTransform().Translation):
-                    spawn{MoveToTarget(NewAgent)}
-                    spawn{NPCFocus.MaintainFocus(NewAgent)}
-                    NavTarget := MakeNavigationTarget(NewAgent)
-                    NavResult:= NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := reach_radius, ?AllowPartialPath:= false)
-                    if(NavResult = navigation_result.Reached):
-                        spawn{PlayAttackAnimation()}
-                        Sleep(attack_recovery)
-
-
+    OnBegin<override>()<suspends>:void={}
+      
     OnKaijuEliminated<public>(Result:elimination_result):void=
         Victim := Result.EliminatedCharacter
         if (MaybeKiller := Result.EliminatingCharacter?):

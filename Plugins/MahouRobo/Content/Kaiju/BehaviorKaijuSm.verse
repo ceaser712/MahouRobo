@@ -33,24 +33,28 @@ BehaviorKaijuSm := class(NPC_Kaiju):
             NPCChar.SetHealth(health)
             NPCSpawnPoint := NPCChar.GetTransform().Translation
     
-            spawn { MovementLoop(NPCChar) }
+            spawn { MovementLoop() }
 
-    MovementLoop(NPCChar:fort_character)<suspends>:void =
-        Sleep(GetRandomFloat(0.0, 0.5))  # Desync
+    MovementLoop()<suspends>:void =
+       
     
         loop:
-            Sleep(0.3)
-            NPCLOC := NPCChar.GetTransform()
-            NPCLOCT := NPCLOC.Translation
-            if (isMoving?):
-                return
-            if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT],MaybeLocation:= NewTarget, NewLocation := MaybeLocation):
-                #if(TargetPos := NewTarget?):
-                    DistanceMoved := Distance(lastTargetLocation, NewTarget)
-    
-                    if (DistanceMoved > 100.0):
-                        set lastTargetLocation = NewTarget
-                        spawn { DoMoveToTarget(NewLocation) }
+            Sleep(GetRandomFloat(0.3, 0.5))  # Desync
+            if:
+                NPCAgent := GetAgent[]
+                NPCChar := NPCAgent.GetFortCharacter[]
+                NPCLOC := NPCChar.GetTransform()
+                NPCLOCT := NPCLOC.Translation
+            then:
+                if (isMoving?):
+                    return
+                if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT], NewLocation := NewTarget):
+                    #if(TargetPos := NewTarget?):
+                        DistanceMoved := Distance(lastTargetLocation, NewTarget)
+        
+                        if (DistanceMoved > 100.0):
+                            set lastTargetLocation = NewTarget
+                            spawn { DoMoveToTarget(NewTarget) }
 
     DoMoveToTarget(NewLocation:vector3)<suspends>:void =
         set isMoving = true
