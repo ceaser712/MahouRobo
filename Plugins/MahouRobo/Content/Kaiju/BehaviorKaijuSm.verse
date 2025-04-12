@@ -11,7 +11,6 @@ using { /Verse.org/Random }
 BehaviorKaijuSm := class(NPC_Kaiju):
     var isTargetInRange : logic = false
     var lastTargetLocation : vector3 = vector3{X := 0.0, Y := 0.0, Z := 0.0}
-    @editable health : float := 500.0
     @editable projectile_speed : float := 20.0
     @editable projectile_damage : float := 5.0
     @editable move_speed : float := 20.0
@@ -32,8 +31,6 @@ BehaviorKaijuSm := class(NPC_Kaiju):
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
-            NPCChar.SetHealth(health)
-            NPCSpawnPoint := NPCChar.GetTransform().Translation
             loop:
                 Sleep(0.1)
                 if (NewTarget := HelperFunc.FindNearestTarget[NPCChar], NewLocation := NewTarget.GetTransform()):
