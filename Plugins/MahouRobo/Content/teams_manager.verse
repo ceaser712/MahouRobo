@@ -24,6 +24,9 @@ teams_manager := class(creative_device,event_listener):
     @editable var RobotTeamSpawnPads : []player_spawner_device = array{}
     @editable var MagicalGirlSpawnPads : []player_spawner_device = array{}
 
+    @editable MagicalGirlSelectAudio : audio_player_device = audio_player_device{}
+    @editable RobotSelectAudio : audio_player_device = audio_player_device{}
+
     var Teams : []team = array{}
     
     # Runs when the device is started in a running game
@@ -65,12 +68,14 @@ teams_manager := class(creative_device,event_listener):
             RobotSelector.ChangeTeamAndClass(Player)
             TeleportToRandomPad(Player, RobotTeamSpawnPads)
             AssignTeamLoadout(Player)
+            RobotSelectAudio.Play(Player)
 
         if(Index = 2):
             Print("Player Chose Magical Girls")
             MagicalGirlSelector.ChangeTeamAndClass(Player)
             TeleportToRandomPad(Player, MagicalGirlSpawnPads)
             AssignTeamLoadout(Player)
+            MagicalGirlSelectAudio.Play(Player)
 
         for(i := 0..Teams.Length):
             TeamCollection:=Self.GetPlayspace().GetTeamCollection()
