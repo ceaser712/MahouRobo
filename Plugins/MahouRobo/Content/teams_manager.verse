@@ -80,8 +80,8 @@ teams_manager := class(creative_device,event_listener):
     AssignTeamLoadout(InPlayer : agent) : void = 
         teamCollection := GetPlayspace().GetTeamCollection()
         if(teamCollection.IsOnTeam[InPlayer, Teams[0]]):
-            if (loadout := TeamLoadouts[1]):
+            if (loadout := TeamLoadouts[0]):
                 loadout.GrantItem(InPlayer)
         if(teamCollection.IsOnTeam[InPlayer, Teams[1]]):
-            if (loadout := TeamLoadouts[0]):
+            if (loadout := TeamLoadouts[1]):
                 loadout.GrantItem(InPlayer)

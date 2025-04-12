@@ -5,7 +5,8 @@ using { /Verse.org/Simulation }
 using { /Verse.org/Assets }
 using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/SpatialMath }
- 
+using { /Fortnite.com/Devices }
+using {CoreCode}
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuMd := class(NPC_Kaiju):
     @editable health : float := 500.0
@@ -29,7 +30,7 @@ BehaviorKaijuMd := class(NPC_Kaiju):
                 Sleep(0.1)
                 if (NewTarget := HelperFunc.FindNearestTarget[NPCChar], NewLocation := NewTarget.GetTransform()):
                     spawn{MoveToTarget(NewLocation)}
-                    Sleep(0.46)
+                    Sleep(2.0)
     
     MoveToTarget<override>(NewLocation:transform)<suspends>:logic =
         if:
@@ -46,7 +47,7 @@ BehaviorKaijuMd := class(NPC_Kaiju):
                     NavResult:= NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := reach_radius)
                     if(NavResult = navigation_result.Reached or NavResult = navigation_result.PartiallyReached):
                         spawn{PlayAttackAnimation()}
-                        Sleep(attack_recovery)
+                        Sleep(2.0)
                     return true
         else:
             return false
@@ -58,6 +59,7 @@ BehaviorKaijuMd := class(NPC_Kaiju):
             NPCAnim := NPCChar.GetPlayAnimationController[]
         then:
             NPCAnim.Play(Attack1)
+            GetGlobalBus().Notify("MedKaijuAttacked", eventdata{Agent:=option{NPCAgent} ,Location:= option{NPCChar.GetTransform().Translation + vector3{X:=-0.971346,Y:=-240.007166,Z:=103.402348}}})
             return true
         else:
             return false

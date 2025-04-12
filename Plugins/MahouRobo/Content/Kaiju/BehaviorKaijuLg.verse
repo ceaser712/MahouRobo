@@ -38,7 +38,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
     
     DamageCheck(Prop : creative_prop)<suspends>:void =
         loop:
-            Sleep(0.0)
+            Sleep(0.1)
             for(Player : Prop.GetPlayspace().GetPlayers(), FC := Player.GetFortCharacter[]):
                 if(Distance(FC.GetTransform().Translation, Prop.GetTransform().Translation) < 100.0):
                     FC.Damage(projectile_damage)

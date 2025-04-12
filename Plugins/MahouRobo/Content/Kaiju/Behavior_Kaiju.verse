@@ -10,7 +10,7 @@ using {CoreCode}
 NPC_Kaiju := class(npc_behavior):
     @editable var point_value : int := 10
     @editable attack_recovery : float := 1.46
-    @editable reach_radius : float := 150.0
+    @editable reach_radius : float := 300.0
 
     HelperFunc : KaijuHelper = KaijuHelper{}
 
