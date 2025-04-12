@@ -23,13 +23,17 @@
 	{
 		"matchmaking":
 		{
-			"maxPlayers": 20,
-			"maxTeamCount": 1,
-			"maxTeamSize": 20,
-			"maxSocialPartySize": 20,
+			"maxPlayers": 18,
+			"maxTeamCount": 3,
+			"maxTeamSize": 18,
+			"maxSocialPartySize": 18,
 			"allowJoinInProgress": true,
 			"allowSquadFillOption": false,
 			"islandQueuePrivacy": "Unrestricted",
+			"minPlayers": 1,
+			"overtimePlayerTarget": 1,
+			"queueMainDuration": 5,
+			"queueOvertimeDuration": 5,
 			"version": 1
 		},
 		"ugcLocalization":

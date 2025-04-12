@@ -1,1 +1,1 @@
-Core:=module:
+CoreCode<public>:=module:
