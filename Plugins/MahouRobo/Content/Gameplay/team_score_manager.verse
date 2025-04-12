@@ -26,15 +26,15 @@ team_score_manager := class(creative_device,event_listener):
 
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void =
+        set Teams = GetPlayspace().GetTeamCollection().GetTeams()
         GetGlobalBus().Subscribe("RoundEnd","team_score_manager", Self)
         GetGlobalBus().Subscribe("PlayerEliminatedKaiju","team_score_manager", Self)
         GetGlobalBus().Subscribe("PlayerEliminatedPlayer","team_score_manager", Self)
         ClearScores()
        
     ClearScores(): void = 
-        n := GetPlayspace().GetTeamCollection().GetTeams().Length
         set Scores =
-            for (i := 0..n):
+            for (i := 0..Teams.Length):
                 0
 
         for(Hud:HudMessages):
@@ -55,7 +55,6 @@ team_score_manager := class(creative_device,event_listener):
 
 
     AwardTeamPoints(Agent:agent, Points:int):void=
-        set Teams = GetPlayspace().GetTeamCollection().GetTeams()
         Print("Awarding Team Points")
 
         teamCollection := GetPlayspace().GetTeamCollection()
