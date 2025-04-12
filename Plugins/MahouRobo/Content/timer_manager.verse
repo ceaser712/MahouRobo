@@ -6,10 +6,17 @@ using {CoreCode}
 
 # See https://dev.epicgames.com/documentation/en-us/uefn/create-your-own-device-in-verse for how to create a verse device.
 
+timed_event<public> := class():
+    @editable TimeToTrigger: float = 0.0
+    @editable ID: string = "SetEventID"
+
 # A Verse-authored creative device that can be placed in a level
 timer_manager<public> := class(creative_device,event_listener):
     @editable Duration: float = 1800.0
     @editable Timer: timer_device = timer_device{}
+
+    @editable var TimedEvents : []timed_event = array{}
+
     var CancelTimer: logic = false
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void=
@@ -24,12 +31,22 @@ timer_manager<public> := class(creative_device,event_listener):
         else if (EventName = "RoundEnd"):
             set CancelTimer = true
 
+
+    CheckForTimbeTriggeredEvent(timeRemaining : float): void =
+        currentTime := 1800.0 - timeRemaining
+        for (Event:TimedEvents):
+            if (Event.TimeToTrigger = currentTime):
+                Print("Timer Triggered Event: {Event.ID}")
+                GetGlobalBus().Notify(Event.ID,eventdata{})
+
+
     StartTimer()<suspends>: void =
         GetGlobalBus().Notify("TimerStarted",eventdata{})
         Timer.SetActiveDuration(Duration)
         Timer.StartForAll()
         var Remaining: float = Duration
         loop:
+            CheckForTimbeTriggeredEvent(Remaining)
             if(CancelTimer?):
                 Print("Timer canceled")
                 GetGlobalBus().Notify("TimerCanceled",eventdata{})
@@ -43,3 +60,5 @@ timer_manager<public> := class(creative_device,event_listener):
            
             Sleep(1.0)
             set Remaining = Remaining - 1.0
+
+    
