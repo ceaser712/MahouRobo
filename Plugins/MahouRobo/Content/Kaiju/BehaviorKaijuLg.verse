@@ -1,6 +1,7 @@
 using { /Fortnite.com/AI }
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
+using { /Fortnite.com/Game }
 using { /Fortnite.com/Animation/PlayAnimation }
 using { /Verse.org/Simulation }
 using { /Verse.org/Assets }
@@ -10,14 +11,16 @@ using { /Verse.org/Random }
 using { CoreCode}
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuLg := class(NPC_Kaiju):
-    @editable health : float = 500.0
     @editable projectile_asset : creative_prop_asset = DefaultCreativePropAsset
     @editable projectile_speed : float = 5.0
     @editable projectile_damage : float = 5.0
     @editable move_speed : float = 20.0
- 
+    @editable waypoint_list : []creative_prop = array{}
+    @editable waypoint_wait : float = 15.0
+
     var Attack1 : animation_sequence = (/anigab@fortnite.com/MahouRobo/Kaiju:)Giant_Anim_EnemyArmature_Attack
 
+    # Fire projectile at targeted player
     FireProjectile()<suspends>:void =
         if:
             NPCAgent := GetAgent[]
@@ -37,6 +40,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
                         return
                     DamageCheck(NewProp)
     
+    # Projectile damage check and damage proc
     DamageCheck(Prop : creative_prop)<suspends>:void =
         loop:
             Sleep(0.1)
@@ -49,21 +53,17 @@ BehaviorKaijuLg := class(NPC_Kaiju):
     OnBegin<override>()<suspends>:void =
         Sleep(0.5)
         set point_value = 5
-    
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
-            NPCChar.SetHealth(health)
-            NPCSpawnPoint := NPCChar.GetTransform().Translation
-    
             spawn { MovementLoop(NPCChar) }
 
     MovementLoop(NPCChar:fort_character)<suspends>:void =
-
+        Sleep(GetRandomFloat(0.0, 0.5))  # Desync
         loop:
-            Sleep(GetRandomFloat(0.3, 0.7))  # Desync
+            Sleep(0.3)
             NPCLOC := NPCChar.GetTransform()
             NPCLOCT := NPCLOC.Translation
             if (isMoving?):
@@ -71,7 +71,6 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT],MaybeLocation:= NewTarget, NewLocation := MaybeLocation):
                 #if(TargetPos := NewTarget):
                     DistanceMoved := Distance(lastTargetLocation, NewTarget)
-    
                     if (DistanceMoved > 100.0):
                         set lastTargetLocation = NewTarget
                         spawn { DoMoveToTarget(NewLocation) }
@@ -119,8 +118,9 @@ BehaviorKaijuLg := class(NPC_Kaiju):
                 return false
         else:
             return false
-
-    PlayAttackAnimation<override>()<suspends>:logic =
+    
+    # Play defined attack animation
+    PlayAttackAnimation<override>()<suspends>:logic = 
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
@@ -147,11 +147,10 @@ BehaviorKaijuLg := class(NPC_Kaiju):
         else:
             return false
 
-
+    # Event handler for elimination
     OnKaijuEliminated<override>(Result:elimination_result):void=
         (super:)OnKaijuEliminated(Result)
 
     # This function runs when the NPC is despawned or eliminated from the world.
     OnEnd<override>():void=
-        # TODO: Replace this with your code
-        Print("Goodbye, NPC!")
+        Print("Big Kaiju despawned")

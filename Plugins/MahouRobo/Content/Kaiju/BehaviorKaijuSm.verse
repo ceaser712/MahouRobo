@@ -10,7 +10,6 @@ using { /Verse.org/Random }
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 BehaviorKaijuSm := class(NPC_Kaiju):
     var isTargetInRange : logic = false
-    @editable health : float := 500.0
     @editable projectile_speed : float := 20.0
     @editable projectile_damage : float := 5.0
     @editable move_speed : float := 20.0
@@ -30,31 +29,24 @@ BehaviorKaijuSm := class(NPC_Kaiju):
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
-            NPCChar.SetHealth(health)
-            NPCSpawnPoint := NPCChar.GetTransform().Translation
-    
-            spawn { MovementLoop() }
+            spawn { MovementLoop(NPCChar) }
 
-    MovementLoop()<suspends>:void =
-       
+    MovementLoop(NPCChar:fort_character)<suspends>:void =
+        Sleep(GetRandomFloat(0.0, 0.5))  # Desync
     
         loop:
-            Sleep(GetRandomFloat(0.3, 0.5))  # Desync
-            if:
-                NPCAgent := GetAgent[]
-                NPCChar := NPCAgent.GetFortCharacter[]
-                NPCLOC := NPCChar.GetTransform()
-                NPCLOCT := NPCLOC.Translation
-            then:
-                if (isMoving?):
-                    return
-                if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT], NewLocation := NewTarget):
-                    #if(TargetPos := NewTarget?):
-                        DistanceMoved := Distance(lastTargetLocation, NewTarget)
-        
-                        if (DistanceMoved > 100.0):
-                            set lastTargetLocation = NewTarget
-                            spawn { DoMoveToTarget(NewTarget) }
+            Sleep(0.3)
+            NPCLOC := NPCChar.GetTransform()
+            NPCLOCT := NPCLOC.Translation
+            if (isMoving?):
+                return
+            if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT],MaybeLocation:= NewTarget, NewLocation := MaybeLocation):
+                #if(TargetPos := NewTarget?):
+                    DistanceMoved := Distance(lastTargetLocation, NewTarget)
+    
+                    if (DistanceMoved > 100.0):
+                        set lastTargetLocation = NewTarget
+                        spawn { DoMoveToTarget(NewLocation) }
 
     DoMoveToTarget(NewLocation:vector3)<suspends>:void =
         set isMoving = true
