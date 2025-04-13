@@ -25,7 +25,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
     var Attack1 : animation_sequence = (/anigab@fortnite.com/MahouRobo/Kaiju:)Giant_Anim_EnemyArmature_Attack
 
     # Fire projectile at targeted player
-    FireProjectile()<suspends>:void =
+    FireProjectile(Target:vector3)<suspends>:void =
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
@@ -35,11 +35,12 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             ForwardVec := MyRotation.GetLocalForward() * 400.0
             RangeVec := MyRotation.GetLocalForward() * 5000.0
             SpawnPos := MyPosition + ForwardVec + vector3{X := 0.0, Y := 0.0, Z := 100.0}
+            NewEndPos:=Target
             EndPos := MyPosition + RangeVec
             if (NewProp := SpawnProp(projectile_asset, SpawnPos, IdentityRotation())(0)? ):
                 race:
                     block:
-                        NewProp.MoveTo(EndPos, IdentityRotation(), projectile_speed)
+                        NewProp.MoveTo(NewEndPos, IdentityRotation(), projectile_speed)
                         NewProp.Dispose()
                         return
                     DamageCheck(NewProp)
@@ -122,6 +123,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
     
                 if (Distance(KaijuPos, TargetPos) < 600.0):
                     spawn { PlayAttackAnimation() }
+                    spawn { FireProjectile(TargetPos) }
     
     # Play defined attack animation
     PlayAttackAnimation<override>()<suspends>:logic = 
