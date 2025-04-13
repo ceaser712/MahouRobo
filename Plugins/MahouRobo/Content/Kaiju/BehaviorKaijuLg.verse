@@ -25,7 +25,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
     var Attack1 : animation_sequence = (/anigab@fortnite.com/MahouRobo/Kaiju:)Giant_Anim_EnemyArmature_Attack
 
     # Fire projectile at targeted player
-    FireProjectile()<suspends>:void =
+    FireProjectile(Target:vector3)<suspends>:void =
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
@@ -35,11 +35,12 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             ForwardVec := MyRotation.GetLocalForward() * 400.0
             RangeVec := MyRotation.GetLocalForward() * 5000.0
             SpawnPos := MyPosition + ForwardVec + vector3{X := 0.0, Y := 0.0, Z := 100.0}
+            NewEndPos:=Target
             EndPos := MyPosition + RangeVec
             if (NewProp := SpawnProp(projectile_asset, SpawnPos, IdentityRotation())(0)? ):
                 race:
                     block:
-                        NewProp.MoveTo(EndPos, IdentityRotation(), projectile_speed)
+                        NewProp.MoveTo(NewEndPos, IdentityRotation(), projectile_speed)
                         NewProp.Dispose()
                         return
                     DamageCheck(NewProp)
@@ -52,7 +53,6 @@ BehaviorKaijuLg := class(NPC_Kaiju):
                 if(Distance(FC.GetTransform().Translation, Prop.GetTransform().Translation) < 100.0):
                     FC.Damage(projectile_damage)
                     Prop.Dispose()
-
    
     OnBegin<override>()<suspends>:void =
         (super:)OnBegin()
@@ -64,8 +64,6 @@ BehaviorKaijuLg := class(NPC_Kaiju):
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
             spawn { MovementLoop() }
-
-            
 
     MovementLoop()<suspends>:void =
         Sleep(GetRandomFloat(0.2, 0.4))  # Desync from others
@@ -103,9 +101,9 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             spawn { NPCFocus.MaintainFocus(TargetPos) }
     
             NavTarget := MakeNavigationTarget(TargetPos)
-            NavResult := NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := 100.0, ?AllowPartialPath := true)
+            NavResult := NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := 250.0, ?AllowPartialPath := true)
     
-            if (NavResult = navigation_result.Reached):
+            if (NavResult = navigation_result.Reached or NavResult = navigation_result.PartiallyReached):
                 spawn { AttackPOIArea(TargetPos) }
                 return true
             else:
@@ -125,6 +123,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
     
                 if (Distance(KaijuPos, TargetPos) < 600.0):
                     spawn { PlayAttackAnimation() }
+                    spawn { FireProjectile(TargetPos) }
     
     # Play defined attack animation
     PlayAttackAnimation<override>()<suspends>:logic = 
@@ -145,7 +144,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
                     "LrgKaijuAttacked",
                     eventdata{
                         Agent := option{NPCAgent},
-                        ValueFA := option{array{60.0, 60.0}}
+                        ValueFA := option{array{600.0, 360.0}}
                     }
                 )
                 return true
