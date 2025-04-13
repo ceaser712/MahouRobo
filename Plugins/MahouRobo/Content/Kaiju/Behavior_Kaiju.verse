@@ -2,41 +2,43 @@ using { /Fortnite.com/AI }
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Animation/PlayAnimation }
 using { /Verse.org/Simulation }
+using { /Verse.org/Simulation/Tags }
 using { /Verse.org/Assets }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Fortnite.com/Game }
 using {CoreCode}
+using { /Fortnite.com/Devices }
+
+
+kaiju_damaged_callback := class():
+    Player: agent
+    Handle(Result: damage_result): void = HandleDamaged(Player, Result)
+    
+HandleDamaged(Player:agent, Result:damage_result):void=
+    Victim := Player
+    GetGlobalBus().Notify("KaijuTakenDamage",eventdata{Agent:=option{Player}})
+
+
+KaijuBehaviourTag:= class(tag){}
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 NPC_Kaiju := class(npc_behavior):
     @editable var point_value : int := 10
     @editable attack_recovery : float := 1.46
-    @editable reach_radius : float := 150.0
-
-    HelperFunc : KaijuHelper = KaijuHelper{}
+    @editable attack_delay_variance : float := 0.5  # How much +/- variance to apply
+    @editable reach_radius : float := 300.0
+    var lastTargetLocation : vector3 = vector3{X := 0.0, Y := 0.0, Z := 0.0}
+    var isMoving : logic = false
+    var HelperFunc<public> : KaijuHelper = KaijuHelper{}
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
     OnBegin<override>()<suspends>:void=
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
-            NPCNav := NPCChar.GetNavigatable[]
-            NPCFocus := NPCChar.GetFocusInterface[]
-            NPCAnim := NPCChar.GetPlayAnimationController[]
         then:
-            NPCSpawnPoint := NPCChar.GetTransform().Translation
-            loop:
-                Sleep(0.1)
-                
-                if (NewTarget := HelperFunc.FindNearestTarget[NPCChar], NewAgent := NewTarget.GetTransform()):
-                    spawn{MoveToTarget(NewAgent)}
-                    spawn{NPCFocus.MaintainFocus(NewAgent.Translation)}
-                    NavTarget := MakeNavigationTarget(NewAgent.Translation)
-                    NavResult:= NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := reach_radius, ?AllowPartialPath:= false)
-                    if(NavResult = navigation_result.Reached):
-                        spawn{PlayAttackAnimation()}
-                        Sleep(attack_recovery)
-
-
+            KaijuDamageCallback := kaiju_damaged_callback{ Player := NPCAgent }
+            NPCChar.DamagedEvent().Subscribe(KaijuDamageCallback.Handle)
+        
     OnKaijuEliminated<public>(Result:elimination_result):void=
         Victim := Result.EliminatedCharacter
         if (MaybeKiller := Result.EliminatingCharacter?):
@@ -48,8 +50,9 @@ NPC_Kaiju := class(npc_behavior):
                     "victim" => VictimAgent
                 }}})
 
-    MoveToTarget<public>(NewLocation:transform)<suspends>:logic = false
+    MoveToTarget<public>(NewLocation:vector3)<suspends>:logic = false
     PlayAttackAnimation<public>()<suspends>:logic = false
+    
 
     # This function runs when the NPC is despawned or eliminated from the world.
     OnEnd<override>():void=

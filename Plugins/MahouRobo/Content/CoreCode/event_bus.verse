@@ -2,6 +2,7 @@
 using { /Fortnite.com/Devices }
 using { /Verse.org/Simulation }
 using { /Verse.org/Simulation }
+using { /UnrealEngine.com/Temporary/SpatialMath }
 
 # See https://dev.epicgames.com/documentation/en-us/uefn/create-your-own-device-in-verse for how to create a verse device.
 
@@ -11,7 +12,9 @@ eventdata<public>:=class():
     AgentMap<public>: ?[string]agent = false
     Agent<public>: ?agent = false
     ValueF<public>: float = 0.0
+    ValueFA<public>: ?[]float = false
     ValueI<public>: int = 0
+    Location<public>: ?vector3 = false
     Msg<public>: ?string = false
     
 event_bus<public> := class():
