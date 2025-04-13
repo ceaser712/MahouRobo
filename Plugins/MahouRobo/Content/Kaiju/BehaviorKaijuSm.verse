@@ -25,6 +25,7 @@ BehaviorKaijuSm := class(NPC_Kaiju):
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
     OnBegin<override>()<suspends>:void=
         (super:)OnBegin()
+       # spawn { StartPatrolBehavior(1500.0, 5.0) }
         Sleep(0.5)
         set point_value = 3
 
@@ -33,28 +34,52 @@ BehaviorKaijuSm := class(NPC_Kaiju):
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
+            spawn { StartPatrolBehavior(1500.0, 5.0) }
             spawn { MovementLoop() }
 
-    MovementLoop()<suspends>:void =
+    MovementLoop()<suspends>: void =
         loop:
-           
-            Sleep(GetRandomFloat(1.0, 5.0))  # Desync
+            Sleep(GetRandomFloat(1.0, 3.0))
             if:
                 NPCAgent := GetAgent[]
                 NPCChar := NPCAgent.GetFortCharacter[]
-                NPCLOC := NPCChar.GetTransform()
-                NPCLOCT := NPCLOC.Translation
+            then:   
+                if (Player := HelperFunc.FindNearestTarget[NPCChar]?):
+                    PlayerLoc := Player.GetTransform().Translation
+                    MyLoc := NPCChar.GetTransform().Translation
+                    Dist := Distance(MyLoc, PlayerLoc)
+
+                    if (Dist < min_attack_distance):
+                        set currentState = KaijuState.Attacking
+                        spawn{PlayAttackAnimation()}
+
+                    else if (Dist < safe_distance):
+                        set currentState = KaijuState.Retreating
+                        RunAwayLoc := MyLoc + (MyLoc - PlayerLoc)
+                        spawn { DoMoveToTarget(RunAwayLoc) }
+                    
+                    else:
+                        set currentState = KaijuState.Chasing
+                        spawn { DoMoveToTarget(PlayerLoc) }
+                else:
+                    set currentState = KaijuState.Patrolling
+
+    StartPatrolBehavior(PatrolRadius: float, DelayBetweenMoves: float)<suspends>: void =
+        loop:
+            if:
+                NPCAgent := GetAgent[]
+                NPCChar := NPCAgent.GetFortCharacter[]
             then:
-                
-                if (isMoving?):
-                    return
-         
-                if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT]):
-                        DistanceMoved := Distance(lastTargetLocation, NewTarget)
-        
-                        if (DistanceMoved > 100.0):
-                            set lastTargetLocation = NewTarget
-                            spawn { DoMoveToTarget(NewTarget) }
+                if (currentState = KaijuState.Idle or currentState = KaijuState.Patrolling):
+                    if(not HelperFunc.AnyPlayerNearby(NPCAgent, 3000.0)?):
+                        set currentState = KaijuState.Patrolling
+                        CurrentLocation := NPCChar.GetTransform().Translation
+                        PatrolPoint := HelperFunc.GetRandomNearbyLocation(CurrentLocation, PatrolRadius)
+                        spawn { MoveToTarget(PatrolPoint) }
+                        Sleep(DelayBetweenMoves)
+                    else:
+                        set currentState = KaijuState.Chasing
+            Sleep(1.0)
 
     DoMoveToTarget(NewLocation:vector3)<suspends>:void =
         set isMoving = true
@@ -64,37 +89,22 @@ BehaviorKaijuSm := class(NPC_Kaiju):
     OnKaijuEliminated<override>(Result:elimination_result):void=
         (super:)OnKaijuEliminated(Result)
     
-    MoveToTarget<override>(NewLocation:vector3)<suspends>:logic =
+    MoveToTarget<override>(NewLocation: vector3)<suspends>: logic =
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
             NPCNav := NPCChar.GetNavigatable[]
             NPCFocus := NPCChar.GetFocusInterface[]
         then:
-            PlayerPos := NewLocation
-            MonsterPos := NPCChar.GetTransform().Translation
-            ToPlayer := PlayerPos - MonsterPos
-            DistanceToPlayer := ToPlayer.Length()
-    
-            spawn { NPCFocus.MaintainFocus(PlayerPos) }
-    
-            if (DistanceToPlayer <= min_attack_distance):
-                spawn { PlayAttackAnimation() }
-                return true  # Attack range
-    
-            if (DistanceToPlayer < safe_distance):
-                Direction := ToPlayer / DistanceToPlayer
-                RetreatOffset := Direction * retreat_distance
-                RetreatPos := MonsterPos - RetreatOffset  # Move away from player
-    
-                NavTarget := MakeNavigationTarget(RetreatPos)
-                NavResult := NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := 100.0, ?AllowPartialPath := true)
-    
-                return false  # Not in attack range, still retreating
-            else:
-                return false  # Far enough away, do nothing
-        else:
-            return false
+            NavTarget := MakeNavigationTarget(NewLocation)
+            NavResult := NPCNav.NavigateTo(
+                NavTarget,
+                ?MovementType := movement_types.Running,
+                ?ReachRadius := 150.0,
+                ?AllowPartialPath := true
+            )
+            return true
+        return false
     
     PlayAttackAnimation<override>()<suspends>:logic =
         if:
