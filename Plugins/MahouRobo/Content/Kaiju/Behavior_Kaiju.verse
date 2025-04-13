@@ -9,7 +9,7 @@ using { /Fortnite.com/Game }
 using {CoreCode}
 using { /Fortnite.com/Devices }
 
-
+KaijuState:= enum { Idle, Patrolling, Chasing, Attacking, Retreating }
 kaiju_damaged_callback := class():
     Player: agent
     Handle(Result: damage_result): void = HandleDamaged(Player, Result)
@@ -23,6 +23,7 @@ KaijuBehaviourTag:= class(tag){}
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 NPC_Kaiju := class(npc_behavior):
     @editable var point_value : int := 10
+    var currentState: KaijuState = KaijuState.Idle
     @editable attack_recovery : float := 1.46
     @editable attack_delay_variance : float := 0.5  # How much +/- variance to apply
     @editable reach_radius : float := 300.0

@@ -28,7 +28,7 @@ BehaviorKaijuMd := class(NPC_Kaiju):
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
-    
+            spawn { StartPatrolBehavior(1500.0, 5.0) }
             spawn { MovementLoop() }
 
     MovementLoop()<suspends>:void =
@@ -61,37 +61,32 @@ BehaviorKaijuMd := class(NPC_Kaiju):
             NPCNav := NPCChar.GetNavigatable[]
             NPCFocus := NPCChar.GetFocusInterface[]
         then:
-            PlayerPos := NewLocation
-            MonsterPos := NPCChar.GetTransform().Translation
-            ToPlayer := PlayerPos - MonsterPos
-            DistanceToPlayer := ToPlayer.Length()
-    
-            if (DistanceToPlayer < 250.0):
-                spawn { NPCFocus.MaintainFocus(PlayerPos) }
-                spawn { PlayAttackAnimation() }
-                return true
-    
-            Direction := ToPlayer / DistanceToPlayer
-            StopShortDistance := 200.0
-            TargetPos := PlayerPos - (Direction * StopShortDistance)
-    
-            spawn { NPCFocus.MaintainFocus(PlayerPos) }
-    
-            NavTarget := MakeNavigationTarget(TargetPos)
+            NavTarget := MakeNavigationTarget(NewLocation)
             NavResult := NPCNav.NavigateTo(
                 NavTarget,
                 ?MovementType := movement_types.Running,
                 ?ReachRadius := 150.0,
                 ?AllowPartialPath := true
             )
+            return true
+        return false
     
-            if (NavResult = navigation_result.Reached):
-                spawn { PlayAttackAnimation() }
-                return true
-            else:
-                return false
-        else:
-            return false
+    StartPatrolBehavior(PatrolRadius: float, DelayBetweenMoves: float)<suspends>: void =
+        loop:
+            if:
+                NPCAgent := GetAgent[]
+                NPCChar := NPCAgent.GetFortCharacter[]
+            then:
+                if (currentState = KaijuState.Idle or currentState = KaijuState.Patrolling):
+                    if(not HelperFunc.AnyPlayerNearby(NPCAgent, 3000.0)?):
+                        set currentState = KaijuState.Patrolling
+                        CurrentLocation := NPCChar.GetTransform().Translation
+                        PatrolPoint := HelperFunc.GetRandomNearbyLocation(CurrentLocation, PatrolRadius)
+                        spawn { MoveToTarget(PatrolPoint) }
+                        Sleep(DelayBetweenMoves)
+                    else:
+                        set currentState = KaijuState.Chasing
+            Sleep(1.0)
 
     PlayAttackAnimation<override>()<suspends>:logic =
         if:
