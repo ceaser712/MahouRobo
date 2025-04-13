@@ -18,6 +18,9 @@ BehaviorKaijuLg := class(NPC_Kaiju):
     @editable move_speed : float = 20.0
     @editable waypoint_list : []creative_prop = array{}
     @editable waypoint_wait : float = 15.0
+    var currentPOIIndex : int = 0
+    var poiMoveCount : int = 0
+    @editable poi_switch_interval : float = 60.0  # Move every 60 seconds
 
     var Attack1 : animation_sequence = (/anigab@fortnite.com/MahouRobo/Kaiju:)Giant_Anim_EnemyArmature_Attack
 
@@ -62,24 +65,27 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
             spawn { MovementLoop() }
 
-    MovementLoop()<suspends>:void =
-        loop:
-            Sleep(GetRandomFloat(3.0, 7.0)) # Desync
+            
 
-            if:
-                NPCAgent := GetAgent[]
-                NPCChar := NPCAgent.GetFortCharacter[]
-                NPCLOC := NPCChar.GetTransform()
-                NPCLOCT := NPCLOC.Translation
-            then:
-                
-                if (isMoving?):
-                    return
-                if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT]):
-                        DistanceMoved := Distance(lastTargetLocation, NewTarget)
-                        if (DistanceMoved > 100.0):
-                            set lastTargetLocation = NewTarget
-                            spawn { DoMoveToTarget(NewTarget) }
+    MovementLoop()<suspends>:void =
+        Sleep(GetRandomFloat(0.2, 0.4))  # Desync from others
+
+        loop:
+            Sleep(poi_switch_interval)  # Move every 60s
+    
+            set poiMoveCount += 1
+            set currentPOIIndex += 1
+    
+            if (currentPOIIndex >= waypoint_list.Length):
+                set currentPOIIndex = 0
+    
+            if (poiMoveCount >= 4):
+                set currentPOIIndex = 0
+                set poiMoveCount = 0
+    
+            if (TargetPOI := waypoint_list[currentPOIIndex]):
+                POITransform := TargetPOI.GetTransform()
+                spawn { MoveToTarget(POITransform.Translation) }
 
     DoMoveToTarget(NewLocation:vector3)<suspends>:void =
         set isMoving = true
@@ -93,37 +99,32 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             NPCNav := NPCChar.GetNavigatable[]
             NPCFocus := NPCChar.GetFocusInterface[]
         then:
-            PlayerPos := NewLocation
-            MonsterPos := NPCChar.GetTransform().Translation
-            ToPlayer := PlayerPos - MonsterPos
-            DistanceToPlayer := ToPlayer.Length()
-    
-            if (DistanceToPlayer < 250.0):
-                spawn { NPCFocus.MaintainFocus(PlayerPos) }
-                spawn { PlayAttackAnimation() }
-                return true
-    
-            Direction := ToPlayer / DistanceToPlayer
-            StopShortDistance := 200.0
-            TargetPos := PlayerPos - (Direction * StopShortDistance)
-    
-            spawn { NPCFocus.MaintainFocus(PlayerPos) }
+            TargetPos := NewLocation
+            spawn { NPCFocus.MaintainFocus(TargetPos) }
     
             NavTarget := MakeNavigationTarget(TargetPos)
-            NavResult := NPCNav.NavigateTo(
-                NavTarget,
-                ?MovementType := movement_types.Running,
-                ?ReachRadius := 80.0,
-                ?AllowPartialPath := true
-            )
+            NavResult := NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := 100.0, ?AllowPartialPath := true)
     
             if (NavResult = navigation_result.Reached):
-                spawn { PlayAttackAnimation() }
+                spawn { AttackPOIArea(TargetPos) }
                 return true
             else:
                 return false
         else:
             return false
+
+
+    AttackPOIArea(TargetPos:vector3)<suspends>:void =
+        Sleep(GetRandomFloat(0.2, 0.6))
+    
+        if (NPCAgent := GetAgent[], NPCChar := NPCAgent.GetFortCharacter[]):
+            loop:
+                Sleep(GetRandomFloat(1.0, 2.0))
+    
+                KaijuPos := NPCChar.GetTransform().Translation
+    
+                if (Distance(KaijuPos, TargetPos) < 600.0):
+                    spawn { PlayAttackAnimation() }
     
     # Play defined attack animation
     PlayAttackAnimation<override>()<suspends>:logic = 
