@@ -28,15 +28,15 @@ explosives_pool := class(creative_device,event_listener):
             ToPlayer := PlayerPos - MonsterTransform.Translation
     
             DistanceToPlayer := ToPlayer.Length()
-            if (DistanceToPlayer > Radius):
+            if (DistanceToPlayer <= Radius):
+                DirToPlayer := ToPlayer / DistanceToPlayer
+                Dot := DotProduct(MonsterForward, DirToPlayer)
+                FOVThreshold := Cos(DegreesToRadians(FOVAngleDegrees / 2.0))
     
-            DirToPlayer := ToPlayer / DistanceToPlayer
-            Dot := DotProduct(MonsterForward, DirToPlayer)
-            FOVThreshold := Cos(DegreesToRadians(FOVAngleDegrees / 2.0))
-    
-            if (Dot >= FOVThreshold):
-                PlayerChar.Damage(20.0)
-                
+                if (Dot >= FOVThreshold):
+                    PlayerChar.Damage(Damage)
+
+
     OnEvent<override>(EventName: string, Data:eventdata): void =
         if(EventName = "MedKaijuAttacked"):
             if(MaybeAgent:= Data.Agent?,MaybeFArray:= Data.ValueFA?,Radius:= MaybeFArray[0], FOVAngleDegrees:= MaybeFArray[1], FCharacter:= MaybeAgent.GetFortCharacter[]):
@@ -45,3 +45,7 @@ explosives_pool := class(creative_device,event_listener):
         if(EventName = "SmKaijuAttacked"):
             if(MaybeAgent:= Data.Agent?,MaybeFArray:= Data.ValueFA?,Radius:= MaybeFArray[0], FOVAngleDegrees:= MaybeFArray[1], FCharacter:= MaybeAgent.GetFortCharacter[]):
                 spawn{CheckPlayersInFrontAndDamage(FCharacter,Radius,FOVAngleDegrees,10.0)}
+
+        if(EventName = "LrgKaijuAttacked"):
+            if(MaybeAgent:= Data.Agent?,MaybeFArray:= Data.ValueFA?,Radius:= MaybeFArray[0], FOVAngleDegrees:= MaybeFArray[1], FCharacter:= MaybeAgent.GetFortCharacter[]):
+                spawn{CheckPlayersInFrontAndDamage(FCharacter,Radius,FOVAngleDegrees,50.0)}
