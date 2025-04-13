@@ -88,7 +88,7 @@ BehaviorKaijuSm := class(NPC_Kaiju):
                 RetreatPos := MonsterPos - RetreatOffset  # Move away from player
     
                 NavTarget := MakeNavigationTarget(RetreatPos)
-                NavResult := NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := 80.0, ?AllowPartialPath := true)
+                NavResult := NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := 100.0, ?AllowPartialPath := true)
     
                 return false  # Not in attack range, still retreating
             else:
@@ -113,7 +113,7 @@ BehaviorKaijuSm := class(NPC_Kaiju):
                     "SmKaijuAttacked",
                     eventdata{
                         Agent := option{NPCAgent},
-                        ValueFA := option{array{60.0, 60.0}}
+                        ValueFA := option{array{300.0, 90.0}}
                     }
                 )
                 return true

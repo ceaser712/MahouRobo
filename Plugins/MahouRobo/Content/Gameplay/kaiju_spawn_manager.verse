@@ -1,10 +1,13 @@
 
+using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Verse.org/Simulation }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { CoreCode }
 using { /Verse.org/Concurrency }
 using { /Verse.org/Random }
+using { /UnrealEngine.com/Temporary/SpatialMath }
+using { /Verse.org/SpatialMath }
 
 # See https://dev.epicgames.com/documentation/en-us/uefn/create-your-own-device-in-verse for how to create a verse device.
 
@@ -62,13 +65,24 @@ kaiju_spawn_manager := class(creative_device,event_listener):
         # Print("OnElimination {NumKaiju}")
 
     PickSpawner(Spawners: []npc_spawner_device): npc_spawner_device =
-        # TODO pick the one farthest from any player
-        I := GetRandomInt(0, Spawners.Length - 1)
-        if (Spawner := Spawners[I]):
-            # Print("Spawner {I}")
-            return Spawner
-        Print("No spawner {I}")
-        return npc_spawner_device{}
+        var FarthestSpawner: npc_spawner_device = npc_spawner_device{}
+        var FarthestSpawnerDistance: float = 0.0
+
+        Players := GetPlayspace().GetPlayers()
+        for (Spawner : Spawners):
+            SpawnerLocation := Spawner.GetTransform().Translation
+            var ClosestPlayerDistance: float := 1000000000.0
+            for (Player : Players):
+                if (Character := Player.GetFortCharacter[]):
+                    PlayerLocation := Character.GetTransform().Translation
+                    D := Distance(SpawnerLocation, PlayerLocation)
+                    if (D < ClosestPlayerDistance):
+                        set ClosestPlayerDistance = D
+            if (ClosestPlayerDistance > FarthestSpawnerDistance):
+                set FarthestSpawner = Spawner
+                set FarthestSpawnerDistance = ClosestPlayerDistance
+
+        return FarthestSpawner
 
     SpawnTask(Phase: int, Spawners: []npc_spawner_device, Interval: float, Limit: int)<suspends> : void =
         loop:

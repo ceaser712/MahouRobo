@@ -81,7 +81,7 @@ BehaviorKaijuMd := class(NPC_Kaiju):
             NavResult := NPCNav.NavigateTo(
                 NavTarget,
                 ?MovementType := movement_types.Running,
-                ?ReachRadius := 80.0,
+                ?ReachRadius := 150.0,
                 ?AllowPartialPath := true
             )
     
@@ -111,7 +111,7 @@ BehaviorKaijuMd := class(NPC_Kaiju):
                     "MedKaijuAttacked",
                     eventdata{
                         Agent := option{NPCAgent},
-                        ValueFA := option{array{60.0, 60.0}}
+                        ValueFA := option{array{450.0, 120.0}}
                     }
                 )
                 return true
