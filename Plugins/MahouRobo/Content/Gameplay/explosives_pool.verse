@@ -16,6 +16,8 @@ explosives_pool := class(creative_device,event_listener):
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void=
         GetGlobalBus().Subscribe("MedKaijuAttacked","Explosives_pool", Self)
+        GetGlobalBus().Subscribe("SmKaijuAttacked","Explosives_pool", Self)
+        GetGlobalBus().Subscribe("LrgKaijuAttacked","Explosives_pool", Self)
 
     CheckPlayersInFrontAndDamage(NPCChar:fort_character, Radius:float, FOVAngleDegrees:float, Damage:float)<suspends>:void =
         MonsterTransform := NPCChar.GetTransform()
