@@ -77,16 +77,12 @@ team_score_manager := class(creative_device,event_listener):
         Print("GivePoints got team {InTeamIndex} (must be 1..{Scores.Length})")
     
     GetWinningTeam() : int =
-        var t : int = 0
-        var sc : int = 0
-        for (i := 0..Scores.Length):
-            if (ts := Scores[i]):
-                if (ts > sc):
-                    set t = i
-                    set sc = ts
-                else if (ts = sc):
-                    set t = 0
-        return t
+        if(Scores[0] > Scores[1]):
+            return 0
+        else if(Scores[1] > Scores[0]):
+            return 1
+        else:
+            return 3
 
 
     
@@ -105,22 +101,25 @@ team_score_manager := class(creative_device,event_listener):
         WinningTeam := GetWinningTeam()
 
         if(WinningTeam = 0):
-            GetGlobalBus().Notify("RoundEndTie", eventdata{})
-        else if(WinningTeam = 1):
             GetGlobalBus().Notify("RoundEndRobots", eventdata{})
-        else if(WinningTeam = 2):
+            Print("EndGame: Robots")
+        else if(WinningTeam = 1):
             GetGlobalBus().Notify("RoundEndMagicalGirls", eventdata{})
+            Print("EndGame: Magic")
+        else :
+            GetGlobalBus().Notify("RoundEndTie", eventdata{})
+            Print("EndGame: Tie")
 
-        if (WinningTeam = 0):
+        if (WinningTeam = 3):
             Print("Draw or tiebreaker NYI")
             return
         
         teamCollection := GetPlayspace().GetTeamCollection()
         teams := teamCollection.GetTeams()
-        if (Team := teams[WinningTeam - 1]):
+        if (Team := teams[WinningTeam]):
             if (Agents := teamCollection.GetAgents[Team]):
                 if (Agent := Agents[0]):
-                    if (GameEnder := GameEnders[WinningTeam - 1]):
+                    if (GameEnder := GameEnders[WinningTeam]):
                         GameEnder.Activate(Agent)
                     else:
                         Print("team_score_manager missing an End Game Device for team {WinningTeam}")

@@ -55,6 +55,8 @@ timer_manager<public> := class(creative_device,event_listener):
             if(Remaining <= 0.0):
                 Print("Timer complete")
                 GetGlobalBus().Notify("TimerCompleted",eventdata{})
+                GetGlobalBus().Notify("RoundEnd",eventdata{})
+
                 Timer.ResetForAll()
                 break
            
