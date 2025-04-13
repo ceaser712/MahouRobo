@@ -52,7 +52,6 @@ BehaviorKaijuLg := class(NPC_Kaiju):
                 if(Distance(FC.GetTransform().Translation, Prop.GetTransform().Translation) < 100.0):
                     FC.Damage(projectile_damage)
                     Prop.Dispose()
-
    
     OnBegin<override>()<suspends>:void =
         (super:)OnBegin()
@@ -64,8 +63,6 @@ BehaviorKaijuLg := class(NPC_Kaiju):
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
             spawn { MovementLoop() }
-
-            
 
     MovementLoop()<suspends>:void =
         Sleep(GetRandomFloat(0.2, 0.4))  # Desync from others
@@ -103,9 +100,9 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             spawn { NPCFocus.MaintainFocus(TargetPos) }
     
             NavTarget := MakeNavigationTarget(TargetPos)
-            NavResult := NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := 100.0, ?AllowPartialPath := true)
+            NavResult := NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := 250.0, ?AllowPartialPath := true)
     
-            if (NavResult = navigation_result.Reached):
+            if (NavResult = navigation_result.Reached or NavResult = navigation_result.PartiallyReached):
                 spawn { AttackPOIArea(TargetPos) }
                 return true
             else:
@@ -145,7 +142,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
                     "LrgKaijuAttacked",
                     eventdata{
                         Agent := option{NPCAgent},
-                        ValueFA := option{array{60.0, 60.0}}
+                        ValueFA := option{array{600.0, 360.0}}
                     }
                 )
                 return true
