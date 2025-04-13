@@ -4,15 +4,30 @@ using { /Verse.org/Simulation }
 using { /Verse.org/Simulation/Tags }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
-
+using { CoreCode }
 KaiJuHelperTag:= class(tag){}
-KaijuHelper := class(creative_device):
-
+KaijuHelper := class(creative_device,event_listener):
+    @editable KaijutHitVFX: creative_prop_asset = DefaultCreativePropAsset
     OnBegin<override>()<suspends>:void =
         KaiJuTags:=FindCreativeObjectsWithTag(KaijuBehaviourTag{})
 
         for(KT:KaiJuTags,Kai:=NPC_Kaiju[KT]):
             set Kai.HelperFunc = Self;
+
+    OnEvent<override>(EventName: string, Data:eventdata) : void =
+        if(EventName = "KaijuTakenDamage"):
+            if(MaybeAgent:=Data.Agent?):
+                spawn{DealDamageFX(MaybeAgent)}
+
+    DealDamageFX<public>(Agent:agent)<suspends>:void=
+        if(FortChar:= Agent.GetFortCharacter[]):
+            RO:=SpawnProp(KaijutHitVFX,FortChar.GetTransform().Translation, rotation{})
+            Sleep(0.3)
+            if (SpawnedProp := RO(0)?):
+                spawn{DisposeProp(SpawnedProp)}
+
+    DisposeProp(V:creative_prop)<suspends>:void=
+        V.Dispose()
 
     FindNearestTargetPosition(fromPosition:vector3)<decides><transacts>:vector3 =
         DevicePlayspace := Self.GetPlayspace()

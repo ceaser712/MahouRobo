@@ -1,10 +1,13 @@
 
+using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Verse.org/Simulation }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { CoreCode }
 using { /Verse.org/Concurrency }
 using { /Verse.org/Random }
+using { /UnrealEngine.com/Temporary/SpatialMath }
+using { /Verse.org/SpatialMath }
 
 # See https://dev.epicgames.com/documentation/en-us/uefn/create-your-own-device-in-verse for how to create a verse device.
 
@@ -39,9 +42,11 @@ kaiju_spawn_manager := class(creative_device,event_listener):
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void=
         GlobalBus := GetGlobalBus()
-        GlobalBus.Subscribe("RoundStart", "kaiju_spawn_manager", Self)
-        GlobalBus.Subscribe("MidPhaseStart", "kaiju_spawn_manager", Self)
-        GlobalBus.Subscribe("BossPhaseStart", "kaiju_spawn_manager", Self)
+        GlobalBus.Subscribe("Small Kaiju", "kaiju_spawn_manager", Self)
+        GlobalBus.Subscribe("Transition Phase", "kaiju_spawn_manager", Self)
+        GlobalBus.Subscribe("Medium Kaiju Phase", "kaiju_spawn_manager", Self)
+        GlobalBus.Subscribe("Boss Transition", "kaiju_spawn_manager", Self)
+        GlobalBus.Subscribe("Big Kaiju Phase", "kaiju_spawn_manager", Self)
         for (Spawner:SmallSpawners):
             Spawner.SpawnedEvent.Subscribe(OnSpawn)
             Spawner.EliminatedEvent.Subscribe(OnElimination)
@@ -50,9 +55,6 @@ kaiju_spawn_manager := class(creative_device,event_listener):
             Spawner.EliminatedEvent.Subscribe(OnElimination)
         BossSpawner.SpawnedEvent.Subscribe(OnSpawn)
         BossSpawner.EliminatedEvent.Subscribe(OnElimination)
-
-        # spawn:
-        #     TestPhaseAdvance()
 
     OnSpawn(NewKaiju: agent):void =
         set NumKaiju += 1
@@ -63,13 +65,24 @@ kaiju_spawn_manager := class(creative_device,event_listener):
         # Print("OnElimination {NumKaiju}")
 
     PickSpawner(Spawners: []npc_spawner_device): npc_spawner_device =
-        # TODO pick the one farthest from any player
-        I := GetRandomInt(0, Spawners.Length - 1)
-        if (Spawner := Spawners[I]):
-            # Print("Spawner {I}")
-            return Spawner
-        Print("No spawner {I}")
-        return npc_spawner_device{}
+        var FarthestSpawner: npc_spawner_device = npc_spawner_device{}
+        var FarthestSpawnerDistance: float = 0.0
+
+        Players := GetPlayspace().GetPlayers()
+        for (Spawner : Spawners):
+            SpawnerLocation := Spawner.GetTransform().Translation
+            var ClosestPlayerDistance: float := 1000000000.0
+            for (Player : Players):
+                if (Character := Player.GetFortCharacter[]):
+                    PlayerLocation := Character.GetTransform().Translation
+                    D := Distance(SpawnerLocation, PlayerLocation)
+                    if (D < ClosestPlayerDistance):
+                        set ClosestPlayerDistance = D
+            if (ClosestPlayerDistance > FarthestSpawnerDistance):
+                set FarthestSpawner = Spawner
+                set FarthestSpawnerDistance = ClosestPlayerDistance
+
+        return FarthestSpawner
 
     SpawnTask(Phase: int, Spawners: []npc_spawner_device, Interval: float, Limit: int)<suspends> : void =
         loop:
@@ -83,41 +96,32 @@ kaiju_spawn_manager := class(creative_device,event_listener):
                     Spawner.DespawnAll(false)
                 break
         
-    TestPhaseAdvance()<suspends> : void =
-        PhaseEvents := array{"", "MidPhaseStart", "BossPhaseStart"}
-        loop:
-            if (NextPhaseEvent := PhaseEvents[CurrentPhase]):
-                Sleep(10.0)
-                GetGlobalBus().Notify(NextPhaseEvent, eventdata{})
-            else:
-                break
-
     OnEvent<override>(EventName: string, Data: eventdata): void =
+        Print(EventName)
         case (EventName):
-            "RoundStart" =>
+            "Small Kaiju" =>
                 set CurrentPhase = 1
                 spawn:
                     SpawnTask(1, SmallSpawners, SmallInterval, SmallLimit)
 
-                # Print("Start spawning small")
-
-            "MidPhaseStart" =>
+            "Transition Phase" =>
                 set CurrentPhase = 2
-                spawn:
-                    SpawnTask(2, MediumSpawners, MediumInterval, MediumLimit)
-
-                # Print("Start spawning medium")
-
                 # TODO make them all explode or something
                 for (Spawner : SmallSpawners):
                     Spawner.DespawnAll(false)
-            "BossPhaseStart" =>
-                set CurrentPhase = 3
-                BossSpawner.Spawn()
-                
-                # Print("Spawn boss")
 
+            "Medium Kaiju Phase" =>
+                spawn:
+                    SpawnTask(2, MediumSpawners, MediumInterval, MediumLimit)
+
+            "Boss Transition" =>
+                set CurrentPhase = 3
                 # TODO make them all explode or something
                 for (Spawner : MediumSpawners):
                     Spawner.DespawnAll(false)
+
+            "Big Kaiju Phase" =>
+                BossSpawner.Spawn()
+                
             _ => # default
+                Print("kaiju_spawn_manager subscribed to unhandled event {EventName}")

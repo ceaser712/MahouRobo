@@ -24,6 +24,7 @@ BehaviorKaijuSm := class(NPC_Kaiju):
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
     OnBegin<override>()<suspends>:void=
+        (super:)OnBegin()
         Sleep(0.5)
         set point_value = 3
 
