@@ -22,7 +22,5 @@ main_music_manager := class(creative_device, event_listener):
             Print("Normal Music Playing")
         if(EventName = "Boss Transition Phase"):
             NormalMusicPlayer.Stop()
-            Print("Normal Music Stopped")
         if(EventName = "Big Kaiju Phase"):
             BossMusicPlayer.Play()
-            Print("Boss Music Playing")

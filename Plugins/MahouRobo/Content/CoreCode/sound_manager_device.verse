@@ -44,12 +44,7 @@ sound_manager_device := class(creative_device, event_listener):
     OnEvent<override>(EventName: string, Data:eventdata): void =
         #check the map
         if(audioData := AudioDataMap[EventName+"Everyone"]):
-                    teamCollection := GetPlayspace().GetTeamCollection()
-                    teamArray := teamCollection.GetTeams()
-                    if (robotTeam := teamArray[RobotTeamIndex]):
-                        if(players := teamCollection.GetAgents[robotTeam]):
-                            for(p : players):
-                                audioData.AudioPlayer.Play(p)
+            audioData.AudioPlayer.Play()
 
         else if(audioData := AudioDataMap[EventName+"Robots"]):
             teamCollection := GetPlayspace().GetTeamCollection()
@@ -57,7 +52,8 @@ sound_manager_device := class(creative_device, event_listener):
             if (robotTeam := teamArray[RobotTeamIndex]):
                 if(players := teamCollection.GetAgents[robotTeam]):
                     for(p : players):
-                        audioData.AudioPlayer.Play(p)
+                        audioData.AudioPlayer.Register(p)
+            audioData.AudioPlayer.Play()
                     
         else if(audioData := AudioDataMap[EventName+"MagicalGirls"]):
                 teamCollection := GetPlayspace().GetTeamCollection()
@@ -65,7 +61,8 @@ sound_manager_device := class(creative_device, event_listener):
                 if (magicGirlTeams := teamArray[MagicalGirlsTeamIndex]):
                     if(players := teamCollection.GetAgents[magicGirlTeams]):
                         for(p : players):
-                            audioData.AudioPlayer.Play(p)
+                            audioData.AudioPlayer.Register(p)
+            audioData.AudioPlayer.Play()
 
         else:
             Print("SoundManager: No audio player found for event {EventName}")
