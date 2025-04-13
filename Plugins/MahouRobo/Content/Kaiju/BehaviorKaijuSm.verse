@@ -34,7 +34,7 @@ BehaviorKaijuSm := class(NPC_Kaiju):
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
-            spawn { StartPatrolBehavior(1500.0, 5.0) }
+            spawn { StartPatrolBehavior(8000.0, 5.0) }
             spawn { MovementLoop() }
 
     MovementLoop()<suspends>: void =
