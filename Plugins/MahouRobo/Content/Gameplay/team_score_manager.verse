@@ -4,6 +4,8 @@ using { /Verse.org/Simulation }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { CoreCode }
 
+win_team_data<public>:=class():
+    var TeamIndex: int = 0
 # See https://dev.epicgames.com/documentation/en-us/uefn/create-your-own-device-in-verse for how to create a verse device.
 
 # A Verse-authored creative device that can be placed in a level
@@ -101,6 +103,14 @@ team_score_manager := class(creative_device,event_listener):
     
     EndGame() : void =
         WinningTeam := GetWinningTeam()
+
+        if(WinningTeam = 0):
+            GetGlobalBus().Notify("RoundEndTie", eventdata{})
+        else if(WinningTeam = 1):
+            GetGlobalBus().Notify("RoundEndRobots", eventdata{})
+        else if(WinningTeam = 2):
+            GetGlobalBus().Notify("RoundEndMagicalGirls", eventdata{})
+
         if (WinningTeam = 0):
             Print("Draw or tiebreaker NYI")
             return
