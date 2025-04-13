@@ -9,6 +9,13 @@ elimination_callback := class():
     Player: agent
     Handle(Result: elimination_result): void = HandleElimination(Player, Result)
 
+damaged_callback := class():
+    Player: agent
+    Handle(Result: damage_result): void = HandleDamaged(Player, Result)
+    
+HandleDamaged(Player:agent, Result:damage_result):void=
+    Victim := Player
+    GetGlobalBus().Notify("PlayerTakenDamage",eventdata{Agent:=option{Player}})
    
 HandleElimination(Player: agent, Result: elimination_result): void =
     Victim := Result.EliminatedCharacter
@@ -34,6 +41,8 @@ player_event_bus_device := class(creative_device):
         Sleep(0.3)
         for(Player:Self.GetPlayspace().GetPlayers()): 
             if (Character := Player.GetFortCharacter[]):
+                CharacterDamageCallback := damaged_callback{ Player := Player }
+                Character.DamagedEvent().Subscribe(CharacterDamageCallback.Handle)
                 CharacterElimCallback := elimination_callback{ Player := Player }
                 Character.EliminatedEvent().Subscribe(CharacterElimCallback.Handle)
             Print("For body")

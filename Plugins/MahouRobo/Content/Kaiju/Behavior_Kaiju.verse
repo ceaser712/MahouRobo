@@ -7,6 +7,17 @@ using { /Verse.org/Assets }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Fortnite.com/Game }
 using {CoreCode}
+using { /Fortnite.com/Devices }
+
+
+kaiju_damaged_callback := class():
+    Player: agent
+    Handle(Result: damage_result): void = HandleDamaged(Player, Result)
+    
+HandleDamaged(Player:agent, Result:damage_result):void=
+    Victim := Player
+    GetGlobalBus().Notify("KaijuTakenDamage",eventdata{Agent:=option{Player}})
+
 
 KaijuBehaviourTag:= class(tag){}
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
@@ -20,8 +31,14 @@ NPC_Kaiju := class(npc_behavior):
     var HelperFunc<public> : KaijuHelper = KaijuHelper{}
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
-    OnBegin<override>()<suspends>:void={}
-      
+    OnBegin<override>()<suspends>:void=
+        if:
+            NPCAgent := GetAgent[]
+            NPCChar := NPCAgent.GetFortCharacter[]
+        then:
+            KaijuDamageCallback := kaiju_damaged_callback{ Player := NPCAgent }
+            NPCChar.DamagedEvent().Subscribe(KaijuDamageCallback.Handle)
+        
     OnKaijuEliminated<public>(Result:elimination_result):void=
         Victim := Result.EliminatedCharacter
         if (MaybeKiller := Result.EliminatingCharacter?):

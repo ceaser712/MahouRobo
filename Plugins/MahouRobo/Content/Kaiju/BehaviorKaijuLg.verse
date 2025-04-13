@@ -52,6 +52,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
 
    
     OnBegin<override>()<suspends>:void =
+        (super:)OnBegin()
         Sleep(0.5)
         set point_value = 5
         if:
