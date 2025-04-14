@@ -15,6 +15,9 @@ using { /Verse.org/SpatialMath }
 kaiju_spawn_manager := class(creative_device,event_listener):
 
     @editable
+    var IncomingMessage: hud_message_device = hud_message_device{}
+
+    @editable
     var SmallSpawners: []npc_spawner_device = array{}
 
     @editable
@@ -95,11 +98,15 @@ kaiju_spawn_manager := class(creative_device,event_listener):
                 for (Spawner : Spawners):
                     Spawner.DespawnAll(false)
                 break
-        
+    
+    StringToMessage<localizes>(I : []char) : message = "{I}"
+    
     OnEvent<override>(EventName: string, Data: eventdata): void =
         Print(EventName)
         case (EventName):
             "Small Kaiju Phase" =>
+                IncomingMessage.SetText(StringToMessage("KAIJU INCOMING!"))
+                IncomingMessage.Show()
                 set CurrentPhase = 1
                 Print("Entered Small Kaiju Phase Now Spawn them")
                 spawn:
@@ -112,6 +119,8 @@ kaiju_spawn_manager := class(creative_device,event_listener):
                     Spawner.DespawnAll(false)
 
             "Medium Kaiju Phase" =>
+                IncomingMessage.SetText(StringToMessage("BIGGER KAIJU INCOMING!"))
+                IncomingMessage.Show()
                 spawn:
                     SpawnTask(2, MediumSpawners, MediumInterval, MediumLimit)
 
@@ -122,6 +131,7 @@ kaiju_spawn_manager := class(creative_device,event_listener):
                     Spawner.DespawnAll(false)
 
             "Big Kaiju Phase" =>
+                IncomingMessage.SetText(StringToMessage("MASSIVE KAIJU INCOMING!"))
                 BossSpawner.Spawn()
                 
             _ => # default
