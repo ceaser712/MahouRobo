@@ -132,6 +132,7 @@ kaiju_spawn_manager := class(creative_device,event_listener):
 
             "Big Kaiju Phase" =>
                 IncomingMessage.SetText(StringToMessage("MASSIVE KAIJU INCOMING!"))
+                IncomingMessage.Show()
                 BossSpawner.Spawn()
                 
             _ => # default
