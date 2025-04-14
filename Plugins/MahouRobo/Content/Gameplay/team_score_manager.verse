@@ -4,6 +4,8 @@ using { /Verse.org/Simulation }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { CoreCode }
 
+win_team_data<public>:=class():
+    var TeamIndex: int = 0
 # See https://dev.epicgames.com/documentation/en-us/uefn/create-your-own-device-in-verse for how to create a verse device.
 
 # A Verse-authored creative device that can be placed in a level
@@ -20,21 +22,54 @@ team_score_manager := class(creative_device,event_listener):
     @editable
     var GameEnders : []end_game_device = array{}
 
+    IntToMessage<localizes>(I : int) : message = "{I}"
+
+    var Teams : []team = array{}
+
     # Runs when the device is started in a running game
     OnBegin<override>()<suspends>:void =
+        set Teams = GetPlayspace().GetTeamCollection().GetTeams()
         GetGlobalBus().Subscribe("RoundEnd","team_score_manager", Self)
-        for (EliminationManager : EliminationManagers):
-            EliminationManager.EliminationEvent.Subscribe(OnElimination)
-
-        n := GetPlayspace().GetTeamCollection().GetTeams().Length
+        GetGlobalBus().Subscribe("PlayerEliminatedKaiju","team_score_manager", Self)
+        GetGlobalBus().Subscribe("PlayerEliminatedPlayer","team_score_manager", Self)
+        ClearScores()
+       
+    ClearScores(): void = 
         set Scores =
-            for (i := 0..n):
+            for (i := 0..Teams.Length):
                 0
-        for (i := 0..n):
-            UpdateHud(i+1)
-    
+
+        for(Hud:HudMessages):
+            Hud.SetText(IntToMessage(0))
+            Hud.Show()
+
+    OnEvent<override>(EventName: string, Data:eventdata) : void =
+        case (EventName):
+            "PlayerEliminatedPlayer"=>
+                if(MaybeAgentMap:=Data.AgentMap?, Agent:= MaybeAgentMap["killer"]):
+                    AwardTeamPoints(Agent,1)
+            "PlayerEliminatedKaiju" =>
+                if(MaybeAgentMap:=Data.AgentMap?, Agent:= MaybeAgentMap["killer"], Points:= Data.ValueI):
+                    AwardTeamPoints(Agent,Points)
+            "RoundEnd" =>
+                EndGame()
+            _ => # default
+
+
+    AwardTeamPoints(Agent:agent, Points:int):void=
+        Print("Awarding Team Points")
+
+        teamCollection := GetPlayspace().GetTeamCollection()
+        if(teamCollection.IsOnTeam[Agent, Teams[0]]):
+            GivePoints(0, Points)
+                UpdateHud(0)
+
+        if(teamCollection.IsOnTeam[Agent, Teams[1]]):
+            GivePoints(1, Points)
+                UpdateHud(1)
+
     GivePoints(InTeamIndex : int, InPoints : int) : void = 
-        i := InTeamIndex - 1
+        i := InTeamIndex
         if (var score : int := Scores[i]):
             set score += InPoints
             if (set Scores[i] = score):
@@ -42,32 +77,17 @@ team_score_manager := class(creative_device,event_listener):
         Print("GivePoints got team {InTeamIndex} (must be 1..{Scores.Length})")
     
     GetWinningTeam() : int =
-        var t : int = 0
-        var sc : int = 0
-        for (i := 0..Scores.Length):
-            if (ts := Scores[i]):
-                if (ts > sc):
-                    set t = i
-                    set sc = ts
-                else if (ts = sc):
-                    set t = 0
-        return t
+        if(Scores[0] > Scores[1]):
+            return 0
+        else if(Scores[1] > Scores[0]):
+            return 1
+        else:
+            return 3
 
-    OnElimination(InEliminator : ?agent):void =
-        if (not InEliminator?):
-            return
-        teamCollection := GetPlayspace().GetTeamCollection()
-        teams := teamCollection.GetTeams()
-        n := teams.Length
-        for (i := 0..n):
-            if (teamCollection.IsOnTeam[InEliminator?, teams[i]]):
-                GivePoints(i + 1, 1)
-                UpdateHud(i + 1)
 
-    IntToMessage<localizes>(I : int) : message = "{I}"
     
     UpdateHud(InTeamIndex : int) : void =
-        i := InTeamIndex - 1
+        i := InTeamIndex
         if (hudMessage := HudMessages[i]):
             if (score := Scores[i]):
                 hudMessage.SetText(IntToMessage(score))
@@ -76,24 +96,30 @@ team_score_manager := class(creative_device,event_listener):
         else:
             Print("team_score_manager missing a HUD Message Device for team {InTeamIndex}")
 
-    OnEvent<override>(EventName: string, Data:eventdata) : void =
-        case (EventName):
-            "RoundEnd" =>
-                EndGame()
-            _ => # default
     
     EndGame() : void =
         WinningTeam := GetWinningTeam()
-        if (WinningTeam = 0):
+
+        if(WinningTeam = 0):
+            GetGlobalBus().Notify("RoundEndRobots", eventdata{})
+            Print("EndGame: Robots")
+        else if(WinningTeam = 1):
+            GetGlobalBus().Notify("RoundEndMagicalGirls", eventdata{})
+            Print("EndGame: Magic")
+        else :
+            GetGlobalBus().Notify("RoundEndTie", eventdata{})
+            Print("EndGame: Tie")
+
+        if (WinningTeam = 3):
             Print("Draw or tiebreaker NYI")
             return
         
         teamCollection := GetPlayspace().GetTeamCollection()
         teams := teamCollection.GetTeams()
-        if (Team := teams[WinningTeam - 1]):
+        if (Team := teams[WinningTeam]):
             if (Agents := teamCollection.GetAgents[Team]):
                 if (Agent := Agents[0]):
-                    if (GameEnder := GameEnders[WinningTeam - 1]):
+                    if (GameEnder := GameEnders[WinningTeam]):
                         GameEnder.Activate(Agent)
                     else:
                         Print("team_score_manager missing an End Game Device for team {WinningTeam}")
