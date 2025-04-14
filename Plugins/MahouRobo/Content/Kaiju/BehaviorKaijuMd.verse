@@ -78,12 +78,14 @@ BehaviorKaijuMd := class(NPC_Kaiju):
                 NPCChar := NPCAgent.GetFortCharacter[]
             then:
                 if (currentState = KaijuState.Idle or currentState = KaijuState.Patrolling):
-                    if(not HelperFunc.AnyPlayerNearby(NPCAgent, 3000.0)?):
+                    if (not HelperFunc.AnyPlayerNearby(NPCAgent, 3000.0)?):
                         set currentState = KaijuState.Patrolling
-                        CurrentLocation := NPCChar.GetTransform().Translation
-                        PatrolPoint := HelperFunc.GetRandomNearbyLocation(CurrentLocation, PatrolRadius)
-                        spawn { MoveToTarget(PatrolPoint) }
-                        Sleep(DelayBetweenMoves)
+    
+                        if (PatrolPOIs.Length > 0):
+                            if(POI := PatrolPOIs[GetRandomInt(0, PatrolPOIs.Length - 1)]):
+                                PatrolTarget := HelperFunc.GetRandomNearbyLocation(POI, PatrolRadius)
+                                spawn { DoMoveToTarget(PatrolTarget) }
+                                Sleep(DelayBetweenMoves)
                     else:
                         set currentState = KaijuState.Chasing
             Sleep(1.0)

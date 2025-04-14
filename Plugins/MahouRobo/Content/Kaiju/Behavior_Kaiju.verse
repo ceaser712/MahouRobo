@@ -22,6 +22,20 @@ HandleDamaged(Player:agent, Result:damage_result):void=
 KaijuBehaviourTag:= class(tag){}
 # A Verse-authored NPC Behavior that can be used within an NPC Character Definition or an NPC Spawner device's NPC Behavior Script Override.
 NPC_Kaiju := class(npc_behavior):
+    var PatrolPOIs: []vector3 = array{
+    vector3{X := 17323.0, Y := 2811.0, Z := 1152.0},
+    vector3{X:= 26360.956507,Y:= 2889.451123,Z:= 364.222638},
+    vector3{X:= 28402.892908,Y:= 7901.451123,Z:= 42.871678},
+    vector3{X:=20174.892908,Y:=-2110.548877,Z:=1156.039311},
+    vector3{X:=20202.892908,Y:=8185.451123,Z:=1157.784396},
+    vector3{X:=18350.892908,Y:=3173.451123,Z:=1160.403645},
+    vector3{X:=14886.892908,Y:=-3266.548877,Z:=1156.086841},
+    vector3{X:=14978.892908,Y:=9909.451123,Z:=1156.022538},
+    vector3{X:=13126.892908,Y:=4897.451123,Z:=1156.960242},
+    vector3{X:=12606.892908,Y:=1153.451123,Z:=1156.022538},
+    vector3{X:=28374.892908,Y:=-2394.548877,Z:=74.906102}}
+
+    @editable CentralPoint: vector3 = vector3{X := 17323.0, Y := 2811.0, Z := 1152.0}
     @editable var point_value : int := 10
     var currentState: KaijuState = KaijuState.Idle
     @editable attack_recovery : float := 1.46
