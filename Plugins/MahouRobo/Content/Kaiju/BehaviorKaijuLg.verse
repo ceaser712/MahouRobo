@@ -64,7 +64,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             NPCChar := NPCAgent.GetFortCharacter[]
         then:
             NPCChar.EliminatedEvent().Subscribe(OnKaijuEliminated)
-            spawn { MovementLoop() }
+            spawn { StartPOILoop() }
 
     MovementLoop()<suspends>:void =
         Sleep(GetRandomFloat(0.2, 0.4))  # Desync from others
@@ -91,7 +91,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
         spawn{MoveToTarget(NewLocation)}  # Call and ignore result
         set isMoving = false
 
-    MoveToTarget<override>(NewLocation:vector3)<suspends>:logic =
+    MoveToTarget<override>(NewLocation: vector3)<suspends>: logic =
         if:
             NPCAgent := GetAgent[]
             NPCChar := NPCAgent.GetFortCharacter[]
@@ -102,7 +102,12 @@ BehaviorKaijuLg := class(NPC_Kaiju):
             spawn { NPCFocus.MaintainFocus(TargetPos) }
     
             NavTarget := MakeNavigationTarget(TargetPos)
-            NavResult := NPCNav.NavigateTo(NavTarget, ?MovementType := movement_types.Running, ?ReachRadius := 250.0, ?AllowPartialPath := true)
+            NavResult := NPCNav.NavigateTo(
+                NavTarget,
+                ?MovementType := movement_types.Running,
+                ?ReachRadius := 250.0,
+                ?AllowPartialPath := true
+            )
     
             if (NavResult = navigation_result.Reached or NavResult = navigation_result.PartiallyReached):
                 spawn { AttackPOIArea(TargetPos) }
@@ -111,7 +116,6 @@ BehaviorKaijuLg := class(NPC_Kaiju):
                 return false
         else:
             return false
-
 
     StartPOILoop()<suspends>: void =
         var TimeRemaining: float = 0.0
@@ -122,7 +126,7 @@ BehaviorKaijuLg := class(NPC_Kaiju):
                     # Move to next POI
                     if(POI := waypoint_list[currentPOIIndex]):
                         POILoc := POI.GetTransform().Translation
-                        spawn { DoMoveToTarget(POILoc) }
+                        var Reached: logic = MoveToTarget(POILoc)
         
                         # Reset timer
                         set TimeRemaining = poi_switch_interval
