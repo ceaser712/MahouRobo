@@ -113,6 +113,8 @@ kaiju_spawn_manager := class(creative_device,event_listener):
                     SpawnTask(1, SmallSpawners, SmallInterval, SmallLimit)
 
             "Transition Phase" =>
+                IncomingMessage.SetText(StringToMessage("STRIKE FORCE HAS ARRIVED!"))
+                IncomingMessage.Show()
                 set CurrentPhase = 2
                 # TODO make them all explode or something
                 for (Spawner : SmallSpawners):
