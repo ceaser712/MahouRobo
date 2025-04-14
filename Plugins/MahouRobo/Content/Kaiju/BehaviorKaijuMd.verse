@@ -15,6 +15,8 @@ BehaviorKaijuMd := class(NPC_Kaiju):
     @editable projectile_speed : float := 20.0
     @editable projectile_damage : float := 5.0
     @editable move_speed : float := 20.0
+    @editable safe_distance : float := 1000.0        # Ideal distance from player
+    @editable min_attack_distance : float := 400.0  # When to attack
     var Attack1 : animation_sequence = (/anigab@fortnite.com/MahouRobo/Kaiju:)Yeti_Anim_EnemyArmature_Attack
 
     # This function runs when the NPC is spawned in the world and ready to follow a behavior.
@@ -31,23 +33,30 @@ BehaviorKaijuMd := class(NPC_Kaiju):
             spawn { StartPatrolBehavior(8000.0, 5.0) }
             spawn { MovementLoop() }
 
-    MovementLoop()<suspends>:void =
-        
+    MovementLoop()<suspends>: void =
         loop:
-            Sleep(GetRandomFloat(1.0, 3.0))  # Desync
+            Sleep(GetRandomFloat(1.0, 3.0))
             if:
                 NPCAgent := GetAgent[]
                 NPCChar := NPCAgent.GetFortCharacter[]
-                NPCLOC := NPCChar.GetTransform()
-                NPCLOCT := NPCLOC.Translation
             then:
-                if (isMoving?):
-                    return
-                if (NewTarget := HelperFunc.FindNearestTargetPosition[NPCLOCT]):
-                        DistanceMoved := Distance(lastTargetLocation, NewTarget)
-                        if (DistanceMoved > 100.0):
-                            set lastTargetLocation = NewTarget
-                            spawn { DoMoveToTarget(NewTarget) }
+                if (Player := HelperFunc.FindNearestTarget[NPCChar]?):
+                    PlayerLoc := Player.GetTransform().Translation
+                    MyLoc := NPCChar.GetTransform().Translation
+                    Dist := Distance(MyLoc, PlayerLoc)
+    
+                    if (Dist < min_attack_distance):
+                        set currentState = KaijuState.Attacking
+                        spawn { PlayAttackAnimation() }
+    
+                    else if (Dist < safe_distance):
+                        set currentState = KaijuState.Chasing
+                        spawn { DoMoveToTarget(PlayerLoc) }
+    
+                    else:
+                        set currentState = KaijuState.Patrolling
+                else:
+                    set currentState = KaijuState.Patrolling
 
     DoMoveToTarget(NewLocation:vector3)<suspends>:void =
         set isMoving = true
