@@ -5,6 +5,7 @@ using { /Verse.org/Simulation/Tags }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { CoreCode }
+using { /Verse.org/Random }
 KaiJuHelperTag:= class(tag){}
 KaijuHelper := class(creative_device,event_listener):
     @editable KaijutHitVFX: creative_prop_asset = DefaultCreativePropAsset
@@ -28,6 +29,26 @@ KaijuHelper := class(creative_device,event_listener):
 
     DisposeProp(V:creative_prop)<suspends>:void=
         V.Dispose()
+
+    GetRandomNearbyLocation(Center: vector3, Radius: float): vector3 =
+        RandOffset := vector3{
+            X := (GetRandomFloat(-Radius, Radius)),
+            Y := (GetRandomFloat(-Radius, Radius)),
+            Z := 0.0
+        }
+        return Center + RandOffset
+
+    AnyPlayerNearby<public>(NPC: agent, Radius: float)<transacts>: logic =
+        if (NPCChar := NPC.GetFortCharacter[]):
+            MyLoc := NPCChar.GetTransform().Translation
+            DevicePlayspace := Self.GetPlayspace()
+    
+            for (Player : DevicePlayspace.GetPlayers()):
+                if (PlayerChar := Player.GetFortCharacter[]):
+                    PlayerLoc := PlayerChar.GetTransform().Translation
+                    if (Distance(MyLoc, PlayerLoc) < Radius):
+                        return true
+        return false
 
     FindNearestTargetPosition(fromPosition:vector3)<decides><transacts>:vector3 =
         DevicePlayspace := Self.GetPlayspace()

@@ -33,7 +33,7 @@ timer_manager<public> := class(creative_device,event_listener):
 
 
     CheckForTimbeTriggeredEvent(timeRemaining : float): void =
-        currentTime := 1800.0 - timeRemaining
+        currentTime := Duration - timeRemaining
         for (Event:TimedEvents):
             if (Event.TimeToTrigger = currentTime):
                 Print("Timer Triggered Event: {Event.ID}")
@@ -55,6 +55,8 @@ timer_manager<public> := class(creative_device,event_listener):
             if(Remaining <= 0.0):
                 Print("Timer complete")
                 GetGlobalBus().Notify("TimerCompleted",eventdata{})
+                GetGlobalBus().Notify("RoundEnd",eventdata{})
+
                 Timer.ResetForAll()
                 break
            
