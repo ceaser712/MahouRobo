@@ -1,5 +1,6 @@
 # MahouRobo
 
+it's #45 and #44
 # Magical Girl v Robot v Kaiju
 
 *A third-person, player vs player vs environment action game where players pick a team, fight eachother, and fight ai Kaiju.*
